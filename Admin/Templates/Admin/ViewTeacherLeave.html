@@ -1,0 +1,83 @@
+{% extends 'Admin/Head.html' %}
+{% load static %}
+
+{% block content %}
+<div class="row pt-4 justify-content-center">
+    <div class="col-lg-12">
+        <div class="card bg-white bg-opacity-5 border border-white border-opacity-10 rounded-4 shadow-sm overflow-hidden">
+            <div class="card-header bg-primary text-white py-3">
+                <h4 class="mb-0 fw-bold"><i class="fas fa-envelope-open-text me-2"></i> Teacher Leave Management</h4>
+            </div>
+            <div class="card-body p-4 text-white">
+                <div class="table-responsive rounded-3 overflow-hidden">
+                    <table class="table table-dark table-hover mb-0">
+                        <thead class="bg-white bg-opacity-10 border-white border-opacity-10 text-muted small fw-bold uppercase">
+                            <tr>
+                                <th>Sl. No</th>
+                                <th>Faculty Name</th>
+                                <th>Leave Title</th>
+                                <th>Duration</th>
+                                <th>Reason</th>
+                                <th>Status</th>
+                                <th class="text-center">Authorize Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for l in leavedata %}
+                            <tr class="align-middle border-white border-opacity-5">
+                                <td>{{ forloop.counter }}</td>
+                                <td>
+                                    <div class="d-flex align-items-center gap-3">
+                                        <div class="rounded-circle overflow-hidden border border-white border-opacity-10" style="width: 40px; height: 40px;">
+                                            <img src="{{ l.teacher.teacher_photo.url }}" class="w-100 h-100 object-fit-cover shadow-sm" alt="">
+                                        </div>
+                                        <div>
+                                            <span class="fw-semibold d-block text-white">{{ l.teacher.teacher_name }}</span>
+                                            <span class="smaller opacity-50 text-muted lowercase">{{ l.teacher.teacher_email }}</span>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>{{ l.leave_title }}</td>
+                                <td>
+                                    <div class="p-2 bg-white bg-opacity-5 rounded-3 text-center d-flex flex-column gap-1">
+                                        <span class="small fw-bold text-muted uppercase smaller">from: {{ l.leave_fromdate }}</span>
+                                        <span class="small fw-bold text-muted uppercase smaller">to: {{ l.leave_todate }}</span>
+                                    </div>
+                                </td>
+                                <td class="small opacity-75">{{ l.leave_reason }}</td>
+                                <td>
+                                    {% if l.leave_status == 0 %}
+                                    <span class="badge bg-warning bg-opacity-10 text-warning px-3 py-2 rounded-pill fw-medium">Pending Review</span>
+                                    {% elif l.leave_status == 1 %}
+                                    <span class="badge bg-success bg-opacity-10 text-success px-3 py-2 rounded-pill fw-medium">Authorized</span>
+                                    {% else %}
+                                    <span class="badge bg-danger bg-opacity-10 text-danger px-3 py-2 rounded-pill fw-medium">Denied access</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="d-flex justify-content-center gap-2">
+                                        {% if l.leave_status == 0 %}
+                                        <a href="{% url 'Admin:AcceptTeacherLeave' l.id %}" class="btn btn-sm btn-success bg-opacity-20 border-0 rounded-circle p-2 shadow-sm"><i class="fas fa-check"></i></a>
+                                        <a href="{% url 'Admin:RejectTeacherLeave' l.id %}" class="btn btn-sm btn-danger bg-opacity-20 border-0 rounded-circle p-2 shadow-sm"><i class="fas fa-times"></i></a>
+                                        {% else %}
+                                        <i class="fas fa-lock text-muted opacity-30"></i>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                             </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="7" class="text-center text-muted py-5">
+                                    <i class="fas fa-inbox fa-3x opacity-20 mb-3"></i>
+                                    <p>No leave requests found.</p>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

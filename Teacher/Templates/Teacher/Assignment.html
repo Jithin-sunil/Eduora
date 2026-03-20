@@ -1,0 +1,150 @@
+{% extends 'Teacher/Head.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row pt-4 justify-content-center">
+        <div class="col-lg-12">
+            <!-- Header Section -->
+            <div class="d-flex align-items-center justify-content-between mb-4">
+                <div>
+                    <h2 class="h3 fw-bold mb-1">Assignment Portal</h2>
+                    <p class="text-muted small mb-0">Issue academic tasks, set deadlines and track student submissions</p>
+                </div>
+                <div class="bg-primary bg-opacity-10 text-primary p-3 rounded-circle">
+                    <i class="fas fa-tasks fa-2x"></i>
+                </div>
+            </div>
+
+            <div class="row g-4">
+                 <!-- Issuance Form -->
+                <div class="col-xl-4">
+                    <div class="card bg-white bg-opacity-5 border border-white border-opacity-10 rounded-4 shadow-sm h-100 animate-slideIn">
+                        <div class="card-body p-4">
+                            <h5 class="fw-bold mb-4">Issue New Task</h5>
+                            <form action="" method="post" enctype="multipart/form-data">
+                                {% csrf_token %}
+                                <div class="mb-3">
+                                    <label class="form-label text-muted small fw-bold uppercase">Program</label>
+                                    <select name="sel_course" id="sel_course" class="form-select bg-dark border-secondary text-white py-2" required>
+                                        <option value="">-- Program --</option>
+                                        {% for i in coursedata %}
+                                        <option value="{{i.id}}">{{i.course_name}}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label text-muted small fw-bold uppercase">Semester</label>
+                                    <select name="sel_semester" id="sel_semester" class="form-select bg-dark border-secondary text-white py-2" required>
+                                        <option value="">-- Selection --</option>
+                                        {% for i in semesterdata %}
+                                        <option value="{{i.id}}">{{i.semester_name}}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label text-muted small fw-bold uppercase">Subject</label>
+                                    <select name="sel_subject" id="sel_subject" class="form-select bg-dark border-secondary text-white py-2" required>
+                                        <option value="">-- Subject --</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label text-muted small fw-bold uppercase">Task Title</label>
+                                    <input type="text" name="txt_title" class="form-control bg-dark border-secondary text-white py-2" placeholder="e.g. Clinical Case Study" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label text-muted small fw-bold uppercase">Guidelines (File)</label>
+                                    <input type="file" name="file_assignment" class="form-control bg-dark border-secondary text-white" required>
+                                </div>
+                                <div class="mb-4">
+                                    <label class="form-label text-muted small fw-bold uppercase">Submission Deadline</label>
+                                    <input type="date" name="txt_date" class="form-control bg-dark border-secondary text-white py-2" required>
+                                </div>
+                                <div class="d-grid mt-5">
+                                    <button type="submit" class="btn btn-primary py-2 rounded-pill shadow-sm">
+                                        <i class="fas fa-paper-plane me-2"></i>Issue Assignment
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Assignment Journal -->
+                <div class="col-xl-8">
+                    <div class="card bg-white bg-opacity-5 border border-white border-opacity-10 rounded-4 shadow-sm overflow-hidden h-100 animate-fadeIn">
+                        <div class="card-header bg-white bg-opacity-5 py-3 px-4 border-0">
+                            <h5 class="mb-0 fw-bold small text-muted uppercase letter-spacing-1">Active Tasks</h5>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-dark table-hover mb-0 align-middle">
+                                <thead class="bg-white bg-opacity-5">
+                                    <tr>
+                                        <th class="px-4 py-3 border-0 small text-muted uppercase">Task & Context</th>
+                                        <th class="px-4 py-3 border-0 small text-muted uppercase">Deadline</th>
+                                        <th class="px-4 py-3 border-0 small text-muted uppercase text-end">Administration</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for i in assignmentdata %}
+                                    <tr class="border-white border-opacity-5">
+                                        <td class="px-4 py-3">
+                                            <div class="fw-bold">{{ i.assignment_title }}</div>
+                                            <div class="smaller text-muted opacity-50">{{ i.subject.subject_name }} | {{ i.subject.course.course_name }}</div>
+                                        </td>
+                                        <td class="px-4 py-3">
+                                            <span class="badge bg-danger bg-opacity-10 text-danger px-3 py-2 rounded-pill">
+                                                <i class="fas fa-clock me-1"></i> {{ i.assignment_duedate }}
+                                            </span>
+                                        </td>
+                                        <td class="px-4 py-3 text-end">
+                                            <div class="d-flex justify-content-end gap-2">
+                                                <a href="{{ i.assignment_file.url }}" class="btn btn-sm btn-outline-info rounded-pill px-3" target="_blank" title="View Guidelines">
+                                                    <i class="fas fa-file-download"></i>
+                                                </a>
+                                                <a href="{% url 'Teacher:Viewuploads' i.id %}" class="btn btn-sm btn-primary rounded-pill px-3" title="Review Submissions">
+                                                    <i class="fas fa-users me-1"></i> Submissions
+                                                </a>
+                                                <a href="{% url 'Teacher:delassignment' i.id %}" class="btn btn-sm btn-outline-danger border-0 rounded-circle" onclick="return confirm('Archive this Assignment?')">
+                                                    <i class="fas fa-trash-alt"></i>
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="3" class="text-center py-5 text-muted opacity-50">No assignments issued yet.</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script>
+$("#sel_semester").change(function(){
+    var semId = $(this).val();
+    var courseId = document.getElementById("sel_course").value;
+    var ur = "{% url 'Teacher:Ajaxassignsubject' %}";
+    $.ajax({
+        url: ur,
+        data: {semId: semId, courseId: courseId},
+        success: function(data){
+            $("#sel_subject").html(data);
+        },
+    });
+});
+</script>
+
+{% if msg %}
+<script>
+    alert("{{msg}}");
+</script>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,174 @@
+{% extends 'Teacher/Head.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+    .status-input {
+        opacity: 0;
+        position: absolute;
+    }
+    .status-label {
+        width: 100px;
+        padding: 5px 12px;
+        border-radius: 50px;
+        font-size: 0.8rem;
+        font-weight: 700;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        border: 2px solid rgba(255, 255, 255, 0.1);
+        color: #94a3b8;
+    }
+    /* Present Selected */
+    .status-input[value="1"]:checked + .status-label {
+        background: #10b981;
+        border-color: #10b981;
+        color: white;
+        box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);
+    }
+    /* Absent Selected */
+    .status-input[value="0"]:checked + .status-label {
+        background: #ef4444;
+        border-color: #ef4444;
+        color: white;
+        box-shadow: 0 4px 10px rgba(239, 68, 68, 0.3);
+    }
+</style>
+
+<div class="container-fluid py-4">
+    <div class="row pt-4 justify-content-center">
+        <div class="col-lg-12 col-xl-10">
+            <!-- Header Section -->
+            <div class="d-flex align-items-center justify-content-between mb-4">
+                <div>
+                    <h2 class="h3 fw-bold mb-1">Attendance Terminal</h2>
+                    <p class="text-muted small mb-0">Record and review student attendance for clinical and academic sessions</p>
+                </div>
+                <div class="bg-primary bg-opacity-10 text-primary p-3 rounded-circle">
+                    <i class="fas fa-tasks fa-2x"></i>
+                </div>
+            </div>
+
+            <!-- Configuration Card -->
+            <div class="card bg-white bg-opacity-5 border border-white border-opacity-10 rounded-4 shadow-sm mb-5 animate-slideIn">
+                <div class="card-body p-4">
+                    <form method="get">
+                        <div class="row g-3 align-items-end">
+                            <div class="col-md-3">
+                                <label class="form-label text-muted small fw-bold uppercase">Academic Info</label>
+                                <select required name="department" id="sel_department" class="form-select bg-dark border-secondary text-white py-2">
+                                    <option value="">-- Dept --</option>
+                                    {% for d in departments %}
+                                    <option value="{{ d.id }}" {% if d.id|stringformat:"s" == selected_department %}selected{% endif %}>{{ d.department_name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <select required name="course" id="sel_course" class="form-select bg-dark border-secondary text-white py-2">
+                                    <option value="">-- Course --</option>
+                                    {% for c in courses %}
+                                    <option value="{{ c.id }}" {% if c.id|stringformat:"s" == selected_course %}selected{% endif %}>{{ c.course_name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <select required name="semester" class="form-select bg-dark border-secondary text-white py-2">
+                                    <option value="">-- Sem --</option>
+                                    {% for s in semesters %}
+                                    <option value="{{ s.id }}" {% if s.id|stringformat:"s" == selected_semester %}selected{% endif %}>{{ s.semester_name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <select required name="hour" class="form-select bg-dark border-secondary text-white py-2">
+                                    <option value="">-- Hour --</option>
+                                    {% for h in hours %}
+                                    <option value="{{ h.0 }}" {% if h.0 == selected_hour %}selected{% endif %}>{{ h.1 }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                             <div class="col-md-2">
+                                <button type="submit" class="btn btn-primary w-100 py-2 rounded-3 shadow-sm">
+                                    <i class="fas fa-search me-2"></i>Fetch Class
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            {% if selected_students %}
+            <!-- Marking Interface -->
+            <div class="card bg-white bg-opacity-5 border border-white border-opacity-10 rounded-4 shadow-sm overflow-hidden animate-fadeIn">
+                 <div class="card-header bg-white bg-opacity-5 py-3 px-4 border-0 d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0 fw-bold small text-muted uppercase letter-spacing-1">Subject: {{ selected_students.0.subject.subject_name }}</h5>
+                    <div class="badge bg-primary px-3 py-2 rounded-pill fw-bold">{{ selected_day }} - Hour {{ selected_hour }}</div>
+                 </div>
+                <div class="table-responsive">
+                    <form method="post" action="{% url 'Teacher:save_attendance_selection' %}">
+                        {% csrf_token %}
+                        <table class="table table-dark table-hover mb-0 align-middle">
+                            <thead class="bg-white bg-opacity-5">
+                                <tr>
+                                    <th class="px-4 py-3 border-0 small text-muted uppercase">Student Profile</th>
+                                    <th class="px-4 py-3 border-0 small text-muted uppercase text-center" colspan="2">Presence Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for s in selected_students %}
+                                <tr class="border-white border-opacity-5">
+                                    <td class="px-4 py-3 fw-bold">
+                                        <div class="d-flex align-items-center gap-3">
+                                            <div class="rounded-circle bg-white bg-opacity-10 p-2 text-center" style="width: 35px; height: 35px; line-height: 20px;">
+                                                <i class="fas fa-user smaller opacity-50"></i>
+                                            </div>
+                                            {{ s.student.student_name }}
+                                        </div>
+                                    </td>
+                                    <td class="px-4 py-3 text-center">
+                                        <div class="d-inline-flex gap-3">
+                                            <div>
+                                                <input type="radio" name="attendance_{{ s.student.id }}" value="1" id="p_{{ s.student.id }}" class="status-input" required {% if s.attendance == 1 %}checked{% endif %}>
+                                                <label for="p_{{ s.student.id }}" class="status-label">PRESENT</label>
+                                            </div>
+                                            <div>
+                                                <input type="radio" name="attendance_{{ s.student.id }}" value="0" id="a_{{ s.student.id }}" class="status-input" required {% if s.attendance == 0 %}checked{% endif %}>
+                                                <label for="a_{{ s.student.id }}" class="status-label">ABSENT</label>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                        
+                        <div class="p-4 bg-white bg-opacity-5 text-end">
+                            <input type="hidden" name="hour" value="{{ selected_hour }}">
+                            <input type="hidden" name="day" value="{{ selected_day }}">
+                            <input type="hidden" name="course" value="{{ selected_course }}">
+                            <input type="hidden" name="semester" value="{{ selected_semester }}">
+                            <button type="submit" class="btn btn-success px-5 py-2 rounded-pill shadow-sm fw-bold">
+                                <i class="fas fa-cloud-upload-alt me-2"></i>Apply Attendance Log
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+$("#sel_department").change(function(){
+    $.ajax({
+        url: "{% url 'Admin:Ajaxcourse' %}",
+        data: {disid: $(this).val()},
+        success: function(data){
+            $("#sel_course").html(data);
+        }
+    });
+});
+</script>
+{% endblock %}

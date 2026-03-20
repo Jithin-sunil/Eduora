@@ -1,0 +1,652 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Student Portal | EduSphere</title>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary-color: #6366f1;
+            --primary-hover: #4f46e5;
+            --secondary-color: #10b981;
+            --dark-bg: #0f172a;
+            --card-bg: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--dark-bg);
+            color: var(--text-main);
+            margin: 0;
+            display: flex;
+        }
+
+        /* Sidebar Sidebar */
+        .sidebar {
+            width: 280px;
+            height: 100vh;
+            background: #0b1120;
+            border-right: 1px solid var(--glass-border);
+            position: fixed;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 3rem;
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .nav-menu {
+            list-style: none;
+            padding: 0;
+            flex-grow: 1;
+        }
+
+        .nav-item {
+            margin-bottom: 0.5rem;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 0.8rem 1.2rem;
+            color: var(--text-muted) !important;
+            text-decoration: none;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-link i {
+            font-size: 1.1rem;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            background: rgba(99, 102, 241, 0.1);
+            color: var(--text-main) !important;
+        }
+
+        .nav-link.active {
+            color: var(--primary-color) !important;
+            background: rgba(99, 102, 241, 0.1);
+        }
+
+        .logout-btn {
+            margin-top: auto;
+            color: #ef4444 !important;
+        }
+
+        .logout-btn:hover {
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        /* Main Content Area */
+        .content-area {
+            flex-grow: 1;
+            margin-left: 280px;
+            padding: 2rem;
+            min-height: 100vh;
+        }
+
+        /* Chatbot UI */
+        #chatbot-toggle {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 70px;
+            height: 70px;
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            border-radius: 50% 50% 10px 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 2rem;
+            cursor: pointer;
+            box-shadow: 0 10px 30px rgba(99, 102, 241, 0.4);
+            z-index: 1002;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        #chatbot-toggle:hover {
+            transform: scale(1.1) rotate(5deg);
+        }
+
+        #chat-window {
+            position: fixed;
+            bottom: 110px;
+            right: 30px;
+            width: 400px;
+            height: 560px;
+            max-height: calc(100vh - 130px);
+            background: #0f172a;
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 28px;
+            box-shadow: 0 25px 60px rgba(0,0,0,0.6);
+            display: none;
+            flex-direction: column;
+            overflow: hidden;         /* ← CRITICAL: clip children, do NOT scroll the window */
+            z-index: 1003;
+            animation: chatSlideIn 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+        }
+
+        /* When visible it must be a flex column */
+        #chat-window.open {
+            display: flex !important;
+        }
+
+        @media (max-width: 576px) {
+            #chat-window {
+                width: calc(100vw - 20px);
+                right: 10px;
+                left: 10px;
+                bottom: 90px;
+                height: calc(100vh - 120px);
+                max-height: calc(100vh - 120px);
+                border-radius: 20px;
+            }
+            #chatbot-toggle {
+                bottom: 15px;
+                right: 15px;
+                width: 58px;
+                height: 58px;
+                font-size: 1.6rem;
+            }
+        }
+
+        @keyframes chatSlideIn {
+            from { opacity: 0; transform: translateY(30px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .chat-header {
+            background: linear-gradient(90deg, #6366f1, #a855f7);
+            padding: 1.25rem 1.5rem;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 700;
+        }
+
+        .chat-body {
+            flex: 1 1 0;          /* grow AND shrink within flex column */
+            min-height: 0;        /* CRITICAL: prevents flex children from overflowing */
+            padding: 1.25rem;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            background: #020617;
+            scroll-behavior: smooth;
+        }
+
+        /* Nice thin scrollbar inside chat */
+        .chat-body::-webkit-scrollbar { width: 4px; }
+        .chat-body::-webkit-scrollbar-track { background: transparent; }
+        .chat-body::-webkit-scrollbar-thumb { background: rgba(99,102,241,0.4); border-radius: 10px; }
+
+        .chat-footer {
+            flex-shrink: 0;       /* always full height, never squished */
+            padding: 1rem 1.1rem;
+            background: #0f172a;
+            border-top: 1px solid rgba(255,255,255,0.06);
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .chat-input {
+            flex-grow: 1;
+            background: rgba(255, 255, 255, 0.05) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            border-radius: 12px !important;
+            padding: 0.8rem 1.25rem !important;
+            color: white !important;
+            outline: none !important;
+        }
+
+        .message {
+            max-width: 85%;
+            padding: 1rem 1.25rem;
+            border-radius: 18px;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        .user-message {
+            align-self: flex-end;
+            background: #6366f1;
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+
+        .bot-message {
+            align-self: flex-start;
+            background: rgba(255, 255, 255, 0.07);
+            color: #f1f5f9;
+            border-bottom-left-radius: 4px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        /* Global UI Polish & Bug Fixes */
+        .bg-white, .bg-light, .bg-transparent {
+            background-color: transparent !important;
+        }
+
+        .card.bg-white, .card.bg-light {
+            background: rgba(255, 255, 255, 0.04) !important;
+        }
+
+        /* Visibility Fix: Ensure content is always visible regardless of hover/animations */
+        .animate-fadeIn, .animate-slideIn, .animate-slideUp, [class*="animate-"] {
+            opacity: 1 !important;
+            transform: none !important;
+            animation: none !important; /* Some animations might be stuck */
+        }
+
+        /* Force high-visibility white text on all common tags */
+        h1, h2, h3, h4, h5, h6, p, span, td, th, label, div:not(.sidebar):not(.nav-item) {
+            color: #f8fafc !important;
+        }
+
+        .text-muted {
+            color: rgba(255, 255, 255, 0.5) !important;
+        }
+        .sidebar {
+            width: 280px;
+            height: 100vh;
+            background: #020617;
+            border-right: 1px solid rgba(255, 255, 255, 0.05);
+            position: fixed;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            margin-bottom: 3rem;
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            -webkit-background-clip: text;
+             background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            letter-spacing: -0.5px;
+        }
+
+        .nav-menu {
+            list-style: none;
+            padding: 0;
+            flex-grow: 1;
+            overflow-y: auto;
+        }
+
+        .nav-item {
+            margin-bottom: 0.5rem;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 0.8rem 1.2rem;
+            color: #94a3b8 !important;
+            text-decoration: none;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .nav-link i {
+            font-size: 1.1rem;
+            opacity: 0.7;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            background: rgba(99, 102, 241, 0.1);
+            color: #f8fafc !important;
+        }
+
+        .nav-link.active i {
+            color: var(--primary-color);
+            opacity: 1;
+        }
+
+        /* Main Content Area */
+        .content-area {
+            flex-grow: 1;
+            margin-left: 280px;
+            padding: 2.5rem;
+            min-height: 100vh;
+            background-color: var(--dark-bg);
+            background-image: radial-gradient(circle at 50% 0%, rgba(99, 102, 241, 0.05), transparent);
+        }
+
+        @media (max-width: 992px) {
+            .sidebar {
+                width: 80px;
+                padding: 1rem;
+            }
+            .nav-link span, .logo span {
+                display: none;
+            }
+            .content-area {
+                margin-left: 80px;
+            }
+        }
+
+        /* Global Contrast & Input Fixes */
+        body {
+            color: var(--text-main);
+            background-color: var(--dark-bg);
+        }
+
+        h1, h2, h3, h4, h5, h6, label, p, td, th, span {
+            color: var(--text-main) !important;
+        }
+
+        .text-muted {
+            color: var(--text-muted) !important;
+        }
+
+        input, select, textarea {
+            color: #ffffff !important;
+            background-color: rgba(255, 255, 255, 0.05) !important;
+            border: 1px solid rgba(255, 255, 255, 0.15) !important;
+            border-radius: 12px !important;
+            padding: 0.75rem 1rem !important;
+        }
+
+        input::placeholder {
+            color: rgba(255, 255, 255, 0.4) !important;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            background-color: rgba(255, 255, 255, 0.1) !important;
+            border-color: var(--primary-color) !important;
+            box-shadow: 0 0 0 0.25rem rgba(99, 102, 241, 0.25) !important;
+            outline: none !important;
+        }
+
+        option {
+            background-color: #1e293b;
+            color: white;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.04) !important;
+            backdrop-filter: blur(12px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            border-radius: 24px !important;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2) !important;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #6366f1, #a855f7) !important;
+            border: none !important;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3) !important;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+            font-weight: 600 !important;
+            letter-spacing: 0.5px !important;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px) !important;
+            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.4) !important;
+        }
+
+        /* Custom Scrollbar for Dark Theme */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #475569;
+        }
+
+        /* Responsive Chatbot Window */
+        @media (max-width: 576px) {
+            #chat-window {
+                width: calc(100% - 40px) !important;
+                right: 20px !important;
+                left: 20px !important;
+                bottom: 100px !important;
+                height: 400px !important;
+            }
+            #chatbot-toggle {
+                bottom: 20px !important;
+                right: 20px !important;
+            }
+        }
+        /* Global UI Polish & Bug Fixes */
+        .bg-white, .bg-light, .bg-transparent, .container, .container-fluid {
+            background-color: transparent !important;
+        }
+
+        .card.bg-white, .card.bg-light {
+            background: rgba(255, 255, 255, 0.04) !important;
+        }
+
+        /* Visibility Fix: Ensure content is always visible regardless of hover/animations */
+        .animate-fadeIn, .animate-slideIn, .animate-slideUp, [class*="animate-"] {
+            opacity: 1 !important;
+            transform: none !important;
+            animation: none !important; 
+        }
+
+        /* Force high-visibility white text on all common tags */
+        h1, h2, h3, h4, h5, h6, p, span, td, th, label, div:not(.sidebar):not(.nav-item) {
+            color: #f8fafc !important;
+        }
+
+        .text-muted {
+            color: rgba(255, 255, 255, 0.5) !important;
+        }
+        /* Aggressive Global UI Polish */
+        .bg-white, .bg-light, .bg-transparent, .container, .container-fluid, .card-body, .main-panel, .content-wrapper {
+            background-color: transparent !important;
+            background: transparent !important;
+        }
+
+        .card:not(.bg-primary):not(.bg-success):not(.bg-danger) {
+            background: rgba(255, 255, 255, 0.04) !important;
+            border: 1px solid rgba(255, 255, 255, 0.08) !important;
+            color: #f8fafc !important;
+        }
+
+        /* Visibility Fix: Overpower any library transitions */
+        .animate-fadeIn, .animate-slideIn, .animate-slideUp, [class*="animate-"], .fade, .show {
+            opacity: 1 !important;
+            visibility: visible !important;
+            transform: none !important;
+        }
+
+        /* Essential Typography Sync */
+        h1, h2, h3, h4, h5, h6, p, span, td, th, label, .form-label, strong, b {
+            color: #f8fafc !important;
+        }
+
+        .text-muted {
+            color: rgba(255, 255, 255, 0.5) !important;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <a href="{% url 'Student:Homepage' %}" class="logo">
+            <i class="fas fa-graduation-cap"></i> <span>EduSphere</span>
+        </a>
+        
+        <ul class="nav-menu">
+            <li class="nav-item">
+                <a href="{% url 'Student:Homepage' %}" class="nav-link active">
+                    <i class="fas fa-th-large"></i> <span>Dashboard</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'Student:Myprofile' %}" class="nav-link">
+                    <i class="fas fa-user"></i> <span>My Profile</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'Student:Viewnotes' %}" class="nav-link">
+                    <i class="fas fa-book-open"></i> <span>Course Notes</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'Student:Viewassignment' %}" class="nav-link">
+                    <i class="fas fa-tasks"></i> <span>Assignments</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'Student:ViewTimeTable' %}" class="nav-link">
+                    <i class="fas fa-calendar-alt"></i> <span>Timetable</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'Student:viewattendance' %}" class="nav-link">
+                    <i class="fas fa-user-check"></i> <span>Attendance</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'Student:leaveapplication' %}" class="nav-link">
+                    <i class="fas fa-envelope-open-text"></i> <span>Leaves</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'Student:dutyleave' %}" class="nav-link">
+                    <i class="fas fa-user-clock"></i> <span>Duty Leaves</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'Student:Complaint' %}" class="nav-link">
+                    <i class="fas fa-exclamation-circle"></i> <span>Complaints</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'Student:logout' %}" class="nav-link logout-btn">
+                    <i class="fas fa-sign-out-alt"></i> <span>Logout</span>
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <!-- Main Content -->
+    <div class="content-area">
+        {% block content %}{% endblock %}
+    </div>
+
+    <!-- Chatbot -->
+    <div id="chatbot-toggle">
+        <i class="fas fa-comment-dots"></i>
+    </div>
+
+    <div id="chat-window">
+        <div class="chat-header">
+            <span><i class="fas fa-robot me-2"></i> EduBot</span>
+            <i class="fas fa-times cursor-pointer" id="close-chat"></i>
+        </div>
+        <div class="chat-body" id="chat-body">
+            <div class="message bot-message">
+                Hello! I'm your academic assistant. How can I help you today?
+            </div>
+        </div>
+        <div class="chat-footer">
+            <input type="text" id="chat-input" class="chat-input" placeholder="Ask me something...">
+            <button class="btn btn-primary rounded-circle" id="send-btn">
+                <i class="fas fa-paper-plane"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    
+    <script>
+        $(document).ready(function() {
+            $('#chatbot-toggle').click(function() {
+                $('#chat-window').toggleClass('open');
+            });
+
+            $('#close-chat').click(function() {
+                $('#chat-window').removeClass('open');
+            });
+
+            function sendMessage() {
+                const message = $('#chat-input').val();
+                if (!message) return;
+
+                $('#chat-body').append(`<div class="message user-message">${message}</div>`);
+                $('#chat-input').val('');
+                $('#chat-body').scrollTop($('#chat-body')[0].scrollHeight);
+
+                $.ajax({
+                    url: "{% url 'Student:chat' %}",
+                    type: "POST",
+                    contentType: "application/json",
+                    headers: { "X-CSRFToken": "{{ csrf_token }}" },
+                    data: JSON.stringify({ message: message }),
+                    success: function(response) {
+                        $('#chat-body').append(`<div class="message bot-message">${response.reply}</div>`);
+                        $('#chat-body').scrollTop($('#chat-body')[0].scrollHeight);
+                    },
+                    error: function() {
+                        $('#chat-body').append(`<div class="message bot-message text-danger">Error: Could not reach assistant.</div>`);
+                    }
+                });
+            }
+
+            $('#send-btn').click(sendMessage);
+            $('#chat-input').keypress(function(e) {
+                if (e.which == 13) sendMessage();
+            });
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,155 @@
+{% extends 'Admin/Head.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row pt-4 justify-content-center">
+        <div class="col-lg-12">
+            <!-- Header Section -->
+            <div class="d-flex align-items-center justify-content-between mb-4">
+                <div>
+                    <h2 class="h3 fw-bold mb-1">Academic Master Schedule</h2>
+                    <p class="text-muted small mb-0">Configure weekly curriculum delivery and faculty session mapping</p>
+                </div>
+                <div class="bg-primary bg-opacity-10 text-primary p-3 rounded-circle">
+                    <i class="fas fa-calendar-alt fa-2x"></i>
+                </div>
+            </div>
+
+            <!-- Configuration Form -->
+            <div class="card bg-white bg-opacity-5 border border-white border-opacity-10 rounded-4 shadow-sm mb-5 animate-slideIn">
+                <div class="card-body p-4">
+                    <form method="get">
+                        <div class="row g-3 align-items-end">
+                            <div class="col-md-4">
+                                <label class="form-label text-muted small fw-bold uppercase">Department</label>
+                                <select required name="sel_department" id="sel_department" class="form-select bg-dark border-secondary text-white py-2">
+                                    <option value="">-- Choose Dept --</option>
+                                    {% for i in departmentdata %}
+                                    <option value="{{ i.id }}" {% if i.id|stringformat:"s" == selected_department %}selected{% endif %}>{{ i.department_name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label text-muted small fw-bold uppercase">Course / Program</label>
+                                <select required name="course" id="sel_course" class="form-select bg-dark border-secondary text-white py-2">
+                                    <option value="">-- Select Course --</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label text-muted small fw-bold uppercase">Semester</label>
+                                <select required name="semester" class="form-select bg-dark border-secondary text-white py-2">
+                                    <option value="">-- Sem --</option>
+                                    {% for s in semesters %}
+                                    <option value="{{ s.id }}" {% if s.id|stringformat:"s" == semester_id %}selected{% endif %}>{{ s.semester_name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <button type="submit" class="btn btn-primary w-100 py-2 rounded-3 shadow">
+                                    <i class="fas fa-layer-group me-2"></i>Load Configuration
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            {% if course_id and semester_id %}
+            <!-- Timetable Grid -->
+            <div class="card bg-white bg-opacity-5 border border-white border-opacity-10 rounded-4 shadow-sm overflow-hidden animate-fadeIn">
+                <div class="table-responsive">
+                    <table class="table table-dark table-hover mb-0 align-middle">
+                        <thead class="bg-white bg-opacity-10">
+                            <tr>
+                                <th class="px-4 py-4 border-0 text-muted small fw-bold uppercase text-center" style="width: 150px;">Day Cycle</th>
+                                <th class="px-4 py-4 border-0 text-muted small fw-bold uppercase text-center">Session 01</th>
+                                <th class="px-4 py-4 border-0 text-muted small fw-bold uppercase text-center">Session 02</th>
+                                <th class="px-4 py-4 border-0 text-muted small fw-bold uppercase text-center">Session 03</th>
+                                <th class="px-4 py-4 border-0 text-primary small fw-bold uppercase text-center bg-white bg-opacity-5" style="width: 80px;">Interval</th>
+                                <th class="px-4 py-4 border-0 text-muted small fw-bold uppercase text-center">Session 04</th>
+                                <th class="px-4 py-4 border-0 text-muted small fw-bold uppercase text-center">Session 05</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for day in days %}
+                            <tr class="border-white border-opacity-5">
+                                <td class="px-4 py-4 fw-bold text-center bg-white bg-opacity-5 fs-5">{{ day }}</td>
+                                
+                                {% for hour in "123" %}
+                                <td class="px-3 py-4 text-center">
+                                    <select class="form-select form-select-sm bg-dark border-secondary text-white py-2 rounded-3 shadow-sm hover-border-primary transition-all" 
+                                            onchange="saveTimetable('{{ day }}','{{ hour }}',this.value)">
+                                        <option value="">-- [None] --</option>
+                                        {% for sub in subjects %}
+                                        <option value="{{ sub.id }}" {% for t in timetable %} {% if t.day == day and t.hour == hour and t.subject_id == sub.id %} selected {% endif %} {% endfor %}>
+                                            {{ sub.subject_name }}
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                </td>
+                                {% endfor %}
+
+                                {% if forloop.first %}
+                                <td rowspan="5" class="bg-white bg-opacity-5 text-center fw-bold text-muted small letter-spacing-2" style="writing-mode: vertical-lr;">
+                                    L&nbsp;U&nbsp;N&nbsp;C&nbsp;H&nbsp;&nbsp;B&nbsp;R&nbsp;E&nbsp;A&nbsp;K
+                                </td>
+                                {% endif %}
+
+                                {% for hour in "45" %}
+                                <td class="px-3 py-4 text-center">
+                                    <select class="form-select form-select-sm bg-dark border-secondary text-white py-2 rounded-3 shadow-sm hover-border-primary transition-all" 
+                                            onchange="saveTimetable('{{ day }}','{{ hour }}',this.value)">
+                                        <option value="">-- [None] --</option>
+                                        {% for sub in subjects %}
+                                        <option value="{{ sub.id }}" {% for t in timetable %} {% if t.day == day and t.hour == hour and t.subject_id == sub.id %} selected {% endif %} {% endfor %}>
+                                            {{ sub.subject_name }}
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                </td>
+                                {% endfor %}
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="mt-4 text-center text-muted small opacity-50">
+                <i class="fas fa-info-circle me-1"></i> Data is automatically persisted upon selection change.
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    function saveTimetable(day, hour, subject) {
+        $.get("{% url 'Admin:save_timetable' %}", {
+            day: day,
+            hour: hour,
+            subject: subject,
+            course: "{{ course_id }}",
+            semester: "{{ semester_id }}"
+        }, function () {
+            // Toast notification could go here
+            console.log('Saved ' + day + ' ' + hour);
+        });
+    }
+
+    $("#sel_department").change(function () {
+        var dpid = $(this).val();
+        $.ajax({
+            url: "{% url 'Admin:Ajaxcourse' %}",
+            data: { disid: dpid },
+            success: function (data) {
+                $("#sel_course").html(data);
+                {% if course_id %}
+                $("#sel_course").val("{{ course_id }}");
+                {% endif %}
+            },
+        });
+    }).trigger('change');
+</script>
+{% endblock %}

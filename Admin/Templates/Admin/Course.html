@@ -1,0 +1,90 @@
+{% extends 'Admin/Head.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row pt-4 justify-content-center">
+        <div class="col-lg-10">
+            <!-- Header Section -->
+            <div class="d-flex align-items-center justify-content-between mb-4">
+                <div>
+                    <h2 class="h3 fw-bold mb-1">Academic Programs</h2>
+                    <p class="text-muted small mb-0">Define and manage course curriculum and departmental affiliations</p>
+                </div>
+                <div class="bg-primary bg-opacity-10 text-primary p-3 rounded-circle">
+                    <i class="fas fa-graduation-cap fa-2x"></i>
+                </div>
+            </div>
+
+            <!-- Form Card -->
+            <div class="card bg-white bg-opacity-5 border border-white border-opacity-10 rounded-4 shadow-sm mb-5 animate-slideIn">
+                <div class="card-body p-4">
+                    <form action="" method="post">
+                        {% csrf_token %}
+                        <div class="row align-items-end g-3">
+                            <div class="col-md-5">
+                                <label class="form-label text-muted small fw-bold uppercase">Affiliated Department</label>
+                                <select name="sel_department" id="sel_department" class="form-select bg-dark border-secondary text-white py-2" required>
+                                    <option value="">-- Choose Department --</option>
+                                    {% for i in departmentdata %}
+                                    <option value="{{i.id}}">{{i.department_name}}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-5">
+                                <label class="form-label text-muted small fw-bold uppercase">Course / Degree Name</label>
+                                <input type="text" name="txt_course" id="txt_course" class="form-control bg-dark border-secondary text-white py-2" placeholder="e.g. B.Sc. Nursing" required>
+                            </div>
+                            <div class="col-md-2">
+                                <button type="submit" class="btn btn-primary w-100 py-2 rounded-3 shadow-sm">
+                                    <i class="fas fa-plus-circle me-2"></i>Add
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Table Card -->
+            <div class="card bg-white bg-opacity-5 border border-white border-opacity-10 rounded-4 shadow-sm overflow-hidden animate-fadeIn">
+                <div class="table-responsive">
+                    <table class="table table-dark table-hover mb-0 align-middle">
+                        <thead class="bg-white bg-opacity-10 border-0">
+                            <tr>
+                                <th class="px-4 py-3 border-0 small text-muted uppercase">Sl. No</th>
+                                <th class="px-4 py-3 border-0 small text-muted uppercase">Course Designation</th>
+                                <th class="px-4 py-3 border-0 small text-muted uppercase">Departmental Body</th>
+                                <th class="px-4 py-3 border-0 small text-muted uppercase text-end">Manage</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for i in coursedata %}
+                            <tr class="border-white border-opacity-5">
+                                <td class="px-4 py-3">{{ forloop.counter }}</td>
+                                <td class="px-4 py-3 fw-bold">{{ i.course_name }}</td>
+                                <td class="px-4 py-3 opacity-75">{{ i.department.department_name }}</td>
+                                <td class="px-4 py-3 text-end">
+                                    <a href="{% url 'Admin:delcourse' i.id %}" class="btn btn-sm btn-outline-danger border-0 rounded-circle" onclick="return confirm('Remove this course?')">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="4" class="text-center py-5 text-muted opacity-50">No academic programs registered yet.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if msg %}
+<script>
+    alert("{{msg}}");
+</script>
+{% endif %}
+{% endblock %}

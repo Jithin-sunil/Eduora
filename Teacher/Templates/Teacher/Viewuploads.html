@@ -1,0 +1,79 @@
+{% extends 'Teacher/Head.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row pt-4 justify-content-center">
+        <div class="col-lg-11">
+            <!-- Header Section -->
+            <div class="d-flex align-items-center justify-content-between mb-4">
+                <div>
+                    <h2 class="h3 fw-bold mb-1">Submission Review</h2>
+                    <p class="text-muted small mb-0">Evaluate student work and assign academic marks for specific tasks</p>
+                </div>
+                <div class="bg-primary bg-opacity-10 text-primary p-3 rounded-circle">
+                    <i class="fas fa-clipboard-check fa-2x"></i>
+                </div>
+            </div>
+
+            <!-- Review Table Card -->
+            <div class="card bg-white bg-opacity-5 border border-white border-opacity-10 rounded-4 shadow-sm overflow-hidden animate-fadeIn">
+                 <div class="card-header bg-white bg-opacity-5 py-3 px-4 border-0">
+                    <h5 class="mb-0 fw-bold small text-muted uppercase letter-spacing-1">Candidate Submissions</h5>
+                 </div>
+                <div class="table-responsive">
+                    <table class="table table-dark table-hover mb-0 align-middle">
+                        <thead class="bg-white bg-opacity-10">
+                            <tr>
+                                <th class="px-4 py-3 border-0 small text-muted uppercase">Student Profile</th>
+                                <th class="px-4 py-3 border-0 small text-muted uppercase">Submission Date</th>
+                                <th class="px-4 py-3 border-0 small text-muted uppercase">Artifact</th>
+                                <th class="px-4 py-3 border-0 small text-muted uppercase text-end">Evaluation</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for i in submitdata %}
+                            <tr class="border-white border-opacity-5">
+                                <td class="px-4 py-3">
+                                    <div class="d-flex align-items-center gap-3">
+                                        <div class="rounded-circle bg-white bg-opacity-10 p-2 text-center" style="width: 35px; height: 35px; line-height: 20px;">
+                                            <i class="fas fa-user smaller opacity-50"></i>
+                                        </div>
+                                        <span class="fw-bold">{{ i.student.student_name }}</span>
+                                    </div>
+                                </td>
+                                <td class="px-4 py-3 opacity-75 small">
+                                    <i class="fas fa-calendar-alt me-2 smaller"></i>{{ i.ass_date }}
+                                </td>
+                                <td class="px-4 py-3">
+                                    <a href="{{ i.ass_file.url }}" class="btn btn-sm btn-outline-info rounded-pill px-3" target="_blank">
+                                        <i class="fas fa-external-link-alt me-1"></i> Preview
+                                    </a>
+                                </td>
+                                <td class="px-4 py-3 text-end">
+                                    {% if i.ass_status == 0 %}
+                                    <a href="{% url 'Teacher:Addmark' i.id %}" class="btn btn-sm btn-primary rounded-pill px-4 shadow-sm">
+                                        <i class="fas fa-marker me-1"></i> Grade Task
+                                    </a>
+                                    {% else %}
+                                    <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-4 py-2 rounded-pill fw-bold">
+                                        Score: {{ i.ass_score }} / 20
+                                    </span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="4" class="text-center py-5 text-muted">
+                                    <p class="mb-0 opacity-50">No students have uploaded their solutions yet.</p>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

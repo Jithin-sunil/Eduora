@@ -1,0 +1,36 @@
+from django.urls import path
+from Teacher import views
+app_name="Teacher"
+
+urlpatterns = [
+   path('Homepage/',views.Homepage,name="Homepage"),
+   path('Myprofile/',views.Myprofile,name="Myprofile"),
+   path('Editprofile/',views.Editprofile,name="Editprofile"),
+   path('Changepass/',views.Changepass,name="Changepass"),
+   path('Addstudent/',views.Addstudent,name="Addstudent"),
+   path('delstudent/<int:did>/',views.delstudent,name="delstudent"),
+   path('Addnotes/',views.Addnotes,name="Addnotes"),
+   path('delnotes/<int:did>/',views.delnotes,name="delnotes"),
+   path('Ajaxassignsubject/',views.Ajaxassignsubject,name="Ajaxassignsubject"),
+   path('Assignment/',views.Assignment,name="Assignment"),
+   path('delassignment/<int:did>/',views.delassignment,name="delassignment"),
+   path('Viewuploads/<int:aid>/',views.Viewuploads,name="Viewuploads"),
+   path('Addmark/<int:aid>/',views.Addmark,name="Addmark"),
+   path('Viewstudents/',views.Viewstudents,name="Viewstudents"),
+   path('Addinternalmark/<int:aid>/',views.Addinternalmark,name="Addinternalmark"),
+   path("ViewTimeTable/", views.ViewTimeTable, name="ViewTimeTable"),
+   path("student_attendance/", views.student_attendance, name="student_attendance"),
+   path("student_attendance/save/", views.save_attendance_selection, name="save_attendance_selection"),
+   path("viewattendance/<int:sid>", views.viewattendance, name="viewattendance"),
+   path('viewleave/',views.viewleave,name="viewleave"),
+   path('accept/<int:aid>/',views.accept,name="accept"),
+   path('reject/<int:rid>/',views.reject,name="reject"),
+   path('viewdutyleave/',views.viewdutyleave,name="viewdutyleave"),
+   path('acceptduty/<int:aid>/',views.acceptduty,name="acceptduty"),
+   path('rejectduty/<int:rid>/',views.rejectduty,name="rejectduty"),
+   path('myassignedsubject/',views.myassignedsubject,name="myassignedsubject"),
+   path('updateattendance/',views.updateattendance,name="updateattendance"),
+   path('Logout/',views.Logout,name="Logout"),
+   path('ApplyLeave/', views.ApplyLeave, name="ApplyLeave"),
+   path('delteacherleave/<int:did>/', views.delteacherleave, name="delteacherleave"),
+]

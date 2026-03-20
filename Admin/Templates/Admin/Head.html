@@ -1,0 +1,352 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Admin Panel | EduSphere</title>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary-color: #6366f1;
+            --primary-hover: #4f46e5;
+            --secondary-color: #10b981;
+            --dark-bg: #0f172a;
+            --card-bg: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--dark-bg);
+            color: var(--text-main);
+            margin: 0;
+            display: flex;
+        }
+
+        /* Enhanced Sidebar */
+        .sidebar {
+            width: 280px;
+            height: 100vh;
+            background: #020617;
+            border-right: 1px solid rgba(255, 255, 255, 0.05);
+            position: fixed;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            margin-bottom: 3rem;
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            -webkit-background-clip: text;
+             background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            letter-spacing: -0.5px;
+        }
+
+        .nav-menu {
+            list-style: none;
+            padding: 0;
+            flex-grow: 1;
+            overflow-y: auto;
+        }
+
+        .nav-item {
+            margin-bottom: 0.5rem;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 0.8rem 1.2rem;
+            color: #94a3b8 !important;
+            text-decoration: none;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .nav-link i {
+            font-size: 1.1rem;
+            opacity: 0.7;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            background: rgba(99, 102, 241, 0.1);
+            color: #f8fafc !important;
+        }
+
+        .nav-link.active i {
+            color: var(--primary-color);
+            opacity: 1;
+        }
+
+        /* Main Content Area */
+        .content-area {
+            flex-grow: 1;
+            margin-left: 280px;
+            padding: 2.5rem;
+            min-height: 100vh;
+            background-color: var(--dark-bg);
+            background-image: radial-gradient(circle at 50% 0%, rgba(99, 102, 241, 0.05), transparent);
+        }
+
+        .admin-nav-group-title {
+            color: #475569;
+            font-size: 0.7rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-top: 2rem;
+            margin-bottom: 0.75rem;
+            padding-left: 1.2rem;
+            opacity: 0.6;
+        }
+
+        @media (max-width: 992px) {
+            .sidebar {
+                width: 80px;
+                padding: 1rem;
+            }
+            .nav-link span, .logo span, .admin-nav-group-title {
+                display: none;
+            }
+            .content-area {
+                margin-left: 80px;
+            }
+        }
+
+        /* Global Contrast & Input Fixes */
+        body {
+            color: var(--text-main);
+            background-color: var(--dark-bg);
+        }
+
+        h1, h2, h3, h4, h5, h6, label, p, td, th, span {
+            color: var(--text-main) !important;
+        }
+
+        .text-muted {
+            color: var(--text-muted) !important;
+        }
+
+        /* Aggressive Global UI Polish */
+        .bg-white, .bg-light, .bg-transparent, .container, .container-fluid, .card-body, .main-panel, .content-wrapper {
+            background-color: transparent !important;
+            background: transparent !important;
+        }
+
+        .card:not(.bg-primary):not(.bg-success):not(.bg-danger) {
+            background: rgba(255, 255, 255, 0.04) !important;
+            border: 1px solid rgba(255, 255, 255, 0.08) !important;
+            color: #f8fafc !important;
+        }
+
+        /* Visibility Fix: Ensure content is always visible */
+        .animate-fadeIn, .animate-slideIn, .animate-slideUp, [class*="animate-"], .fade, .show {
+            opacity: 1 !important;
+            visibility: visible !important;
+            transform: none !important;
+        }
+
+        /* Essential Typography Sync */
+        h1, h2, h3, h4, h5, h6, p, span, td, th, label, .form-label, strong, b {
+            color: #f8fafc !important;
+        }
+
+        input, select, textarea {
+            color: #ffffff !important;
+            background-color: rgba(255, 255, 255, 0.05) !important;
+            border: 1px solid rgba(255, 255, 255, 0.15) !important;
+            border-radius: 12px !important;
+            padding: 0.75rem 1rem !important;
+        }
+
+        input::placeholder {
+            color: rgba(255, 255, 255, 0.4) !important;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            background-color: rgba(255, 255, 255, 0.1) !important;
+            border-color: var(--primary-color) !important;
+            box-shadow: 0 0 0 0.25rem rgba(99, 102, 241, 0.25) !important;
+            outline: none !important;
+        }
+
+        option {
+            background-color: #1e293b;
+            color: white;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.04) !important;
+            backdrop-filter: blur(12px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            border-radius: 24px !important;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2) !important;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #6366f1, #a855f7) !important;
+            border: none !important;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3) !important;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+            font-weight: 600 !important;
+            letter-spacing: 0.5px !important;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px) !important;
+            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.4) !important;
+        }
+
+        /* Custom Scrollbar for Dark Theme */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #475569;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <a href="{% url 'Admin:Homepage' %}" class="logo">
+            <i class="fas fa-shield-alt"></i> <span>EduAdmin</span>
+        </a>
+        
+        <ul class="nav-menu">
+            <li class="nav-item">
+                <a href="{% url 'Admin:Homepage' %}" class="nav-link active">
+                    <i class="fas fa-home"></i> <span>Dashboard</span>
+                </a>
+            </li>
+
+            <div class="admin-nav-group-title">Master Data</div>
+            <li class="nav-item">
+                <a href="{% url 'Admin:Department' %}" class="nav-link">
+                    <i class="fas fa-building"></i> <span>Departments</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'Admin:Semester' %}" class="nav-link">
+                    <i class="fas fa-layer-group"></i> <span>Semesters</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'Admin:Academicyear' %}" class="nav-link">
+                    <i class="fas fa-calendar-alt"></i> <span>Academic Years</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'Admin:Course' %}" class="nav-link">
+                    <i class="fas fa-graduation-cap"></i> <span>Courses</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'Admin:Subject' %}" class="nav-link">
+                    <i class="fas fa-book"></i> <span>Subjects</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'Admin:Purpose' %}" class="nav-link">
+                    <i class="fas fa-tasks"></i> <span>Duty Purposes</span>
+                </a>
+            </li>
+
+            <div class="admin-nav-group-title">Faculty & Classes</div>
+            <li class="nav-item">
+                <a href="{% url 'Admin:Addteacher' %}" class="nav-link">
+                    <i class="fas fa-user-tie"></i> <span>Manage Teachers</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'Admin:Class' %}" class="nav-link">
+                    <i class="fas fa-users-class"></i> <span>Manage Classes</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'Admin:timetable' %}" class="nav-link">
+                    <i class="fas fa-calendar-alt"></i> <span>Timetable</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'Admin:SpecialTimetable' %}" class="nav-link">
+                    <i class="fas fa-calendar-day"></i> <span>Special Timetable</span>
+                </a>
+            </li>
+
+            <div class="admin-nav-group-title">Approvals & Comms</div>
+            <li class="nav-item">
+                <a href="{% url 'Admin:AdminViewTeacherLeave' %}" class="nav-link">
+                    <i class="fas fa-envelope-open-text"></i> <span>Teacher Leaves</span>
+                </a>
+            </li>
+             <li class="nav-item">
+                <a href="{% url 'Admin:Notification' %}" class="nav-link">
+                    <i class="fas fa-bullhorn"></i> <span>Announcements</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'Admin:Viewcomplaint' %}" class="nav-link">
+                    <i class="fas fa-exclamation-circle"></i> <span>Complaints</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'Admin:AdminReg' %}" class="nav-link">
+                    <i class="fas fa-user-shield"></i> <span>Admins</span>
+                </a>
+            </li>
+
+            <li class="nav-item mt-5">
+                <a href="{% url 'Admin:Logout' %}" class="nav-link text-danger">
+                    <i class="fas fa-sign-out-alt"></i> <span>Logout</span>
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <!-- Main Content -->
+    <div class="content-area">
+        {% block content %}{% endblock %}
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</body>
+
+</html>

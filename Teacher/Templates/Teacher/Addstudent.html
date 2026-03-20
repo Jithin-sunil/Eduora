@@ -1,0 +1,158 @@
+{% extends 'Teacher/Head.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row pt-4 justify-content-center">
+        <div class="col-lg-12">
+            <!-- Header Section -->
+            <div class="d-flex align-items-center justify-content-between mb-4">
+                <div>
+                    <h2 class="h3 fw-bold mb-1">Student Enrollment</h2>
+                    <p class="text-muted small mb-0">Enroll new students into your assigned class</p>
+                </div>
+                <div class="bg-primary bg-opacity-10 text-primary p-3 rounded-circle">
+                    <i class="fas fa-user-plus fa-2x"></i>
+                </div>
+            </div>
+
+            {% if not is_class_teacher %}
+            <div class="alert alert-danger bg-danger bg-opacity-10 border-danger border-opacity-20 text-danger p-4 rounded-4 shadow-sm animate-fadeIn">
+                <div class="d-flex align-items-center gap-3">
+                    <i class="fas fa-exclamation-triangle fa-2x"></i>
+                    <div>
+                        <h5 class="mb-1 fw-bold">Enrollment Disabled</h5>
+                        <p class="mb-0 opacity-75">You are not currently designated as a Class Teacher. Contact the administrator to update your status.</p>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <!-- Enrollment Form Card -->
+            <div class="card bg-white bg-opacity-5 border border-white border-opacity-10 rounded-4 shadow-sm mb-5 animate-slideIn">
+                <div class="card-body p-4">
+                    <form action="" method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="row g-4">
+                            <div class="col-md-6">
+                                <label class="form-label text-muted small fw-bold uppercase letter-spacing-1">Full Name</label>
+                                <input type="text" name="txt_name" id="txt_name" class="form-control bg-dark border-secondary text-white py-2" required placeholder="Full Name" pattern="^[A-Z]+[a-zA-Z ]*$" title="Start with capital letter">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label text-muted small fw-bold uppercase letter-spacing-1">Register Number</label>
+                                <input type="text" name="txt_number" id="txt_number" class="form-control bg-dark border-secondary text-white py-2" required placeholder="Reg. No.">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label text-muted small fw-bold uppercase letter-spacing-1">Email Address</label>
+                                <input type="email" name="txt_email" id="txt_email" class="form-control bg-dark border-secondary text-white py-2" required placeholder="email@example.com">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label text-muted small fw-bold uppercase letter-spacing-1">Contact Number</label>
+                                <input type="text" name="txt_contact" id="txt_contact" class="form-control bg-dark border-secondary text-white py-2" required placeholder="Phone" pattern="[6-9]{1}[0-9]{9}">
+                            </div>
+                            <div class="col-md-12">
+                                <label class="form-label text-muted small fw-bold uppercase letter-spacing-1">Residential Address</label>
+                                <textarea name="txt_address" id="txt_address" class="form-control bg-dark border-secondary text-white" rows="2" required placeholder="Full address..."></textarea>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label text-muted small fw-bold uppercase letter-spacing-1">Date of Birth</label>
+                                <input type="date" name="txt_date" id="txt_date" class="form-control bg-dark border-secondary text-white py-2" required shadow-sm>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label text-muted small fw-bold uppercase letter-spacing-1">Gender</label>
+                                <div class="d-flex gap-4 mt-2">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="txt_gender" value="Male" id="gender_male" required checked>
+                                        <label class="form-check-label text-muted small" for="gender_male">Male</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="txt_gender" value="Female" id="gender_female" required>
+                                        <label class="form-check-label text-muted small" for="gender_female">Female</label>
+                                    </div>
+                                </div>
+                            </div>
+                             <div class="col-md-4">
+                                <label class="form-label text-muted small fw-bold uppercase letter-spacing-1">Profile Photo</label>
+                                <input type="file" name="file_photo" id="file_photo" class="form-control bg-dark border-secondary text-white" required accept="image/*">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label text-muted small fw-bold uppercase letter-spacing-1">Account Password</label>
+                                <input type="password" name="txt_password" id="txt_password" class="form-control bg-dark border-secondary text-white py-2" required placeholder="********" pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}">
+                                <div class="smaller text-muted mt-1 opacity-50">Min 8 chars, 1 uppercase, 1 digit.</div>
+                            </div>
+                            <div class="col-md-12 text-end">
+                                <button type="reset" class="btn btn-outline-secondary px-4 me-2 rounded-pill">Reset</button>
+                                <button type="submit" class="btn btn-primary px-5 rounded-pill shadow-sm">
+                                    <i class="fas fa-user-plus me-2"></i>Register Student
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Enrollment List Table Card -->
+            <div class="card bg-white bg-opacity-5 border border-white border-opacity-10 rounded-4 shadow-sm overflow-hidden animate-fadeIn">
+                 <div class="card-header bg-white bg-opacity-5 py-3 px-4 border-0">
+                    <h5 class="mb-0 fw-bold small text-muted uppercase letter-spacing-1"><i class="fas fa-list me-2 opacity-50"></i> Enrolled in Class</h5>
+                 </div>
+                <div class="table-responsive">
+                    <table class="table table-dark table-hover mb-0">
+                        <thead class="bg-white bg-opacity-5 border-0">
+                            <tr>
+                                <th class="px-4 py-3 text-muted small fw-bold uppercase border-0">Student Info</th>
+                                <th class="px-4 py-3 text-muted small fw-bold uppercase border-0">Contact Details</th>
+                                <th class="px-4 py-3 text-muted small fw-bold uppercase border-0">Gender & DOB</th>
+                                <th class="px-4 py-3 text-muted small fw-bold uppercase border-0 text-end">Manage</th>
+                            </tr>
+                        </thead>
+                        <tbody class="border-0">
+                            {% for i in studentdata %}
+                            <tr class="align-middle border-white border-opacity-5">
+                                <td class="px-4 py-3">
+                                    <div class="d-flex align-items-center gap-3">
+                                        <div class="rounded-circle overflow-hidden shadow-sm" style="width: 45px; height: 45px; border: 2px solid rgba(255,255,255,0.1);">
+                                            <img src="{{ i.student_photo.url }}" class="w-100 h-100 object-fit-cover" alt="">
+                                        </div>
+                                        <div>
+                                            <div class="fw-bold">{{ i.student_name }}</div>
+                                            <div class="smaller text-primary opacity-75">{{ i.student_registernumber }}</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-4 py-3">
+                                    <div class="small fw-semibold text-white mb-1"><i class="fas fa-envelope me-2 opacity-50 smaller"></i>{{ i.student_email }}</div>
+                                    <div class="small text-muted"><i class="fas fa-phone me-2 opacity-50 smaller"></i>{{ i.student_contact }}</div>
+                                </td>
+                                <td class="px-4 py-3">
+                                    <div class="small mb-1">{{ i.student_gender }}</div>
+                                    <div class="smaller text-muted opacity-50"><i class="fas fa-birthday-cake me-1"></i> {{ i.student_dob }}</div>
+                                </td>
+                                <td class="px-4 py-3 text-end">
+                                    <a href="{% url 'Teacher:delstudent' i.id %}" class="btn btn-sm btn-outline-danger border-0 rounded-circle" onclick="return confirm('Delete this student?')">
+                                        <i class="fas fa-user-minus"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="4" class="text-center py-5 text-muted">
+                                    <i class="fas fa-users-slash fa-3x mb-3 opacity-20"></i>
+                                    <p>No students enrolled in your class yet.</p>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+{% if msg %}
+<script>
+    alert("{{msg}}");
+</script>
+{% endif %}
+{% endblock %}

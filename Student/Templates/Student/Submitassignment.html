@@ -1,0 +1,109 @@
+{% extends 'Student/Head.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8 text-center mb-5">
+            <h2 class="fw-bold text-white mb-1">Submit Your Solution</h2>
+            <p class="text-muted">Upload your final assignment file for grading</p>
+        </div>
+        
+        <div class="col-lg-6">
+            <div class="card bg-white bg-opacity-5 border border-white border-opacity-10 rounded-4 shadow-sm mb-5 animate-slideIn">
+                <div class="card-body p-5">
+                    <form action="" method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <div class="upload-zone mb-4 p-5 text-center transition-all bg-white bg-opacity-5 border-2 border-dashed border-secondary rounded-4" onclick="document.getElementById('file_submit').click()" style="cursor: pointer;">
+                            <div class="mb-3">
+                                <i class="fas fa-file-upload fa-4x text-primary opacity-50"></i>
+                            </div>
+                            <h5 class="fw-bold mb-2">Click to select file</h5>
+                            <p class="smaller text-muted">Supports PDF, DOCX, ZIP (Max 10MB)</p>
+                            <input type="file" name="file_submit" id="file_submit" class="d-none" required onchange="updateFileInfo()">
+                            <div id="fileInfo" class="mt-3 small text-primary fw-bold"></div>
+                        </div>
+
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary py-3 rounded-pill shadow">
+                                <i class="fas fa-cloud-upload-alt me-2"></i>Final Submission
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-10 mt-4">
+            <div class="card bg-white bg-opacity-5 border border-white border-opacity-10 rounded-4 overflow-hidden shadow-sm animate-fadeIn">
+                <div class="card-header bg-white bg-opacity-5 py-3 px-4 border-0">
+                    <h5 class="mb-0 fw-bold small text-muted uppercase letter-spacing-1">My Submission History</h5>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-dark border-0 mb-0 align-middle">
+                        <thead class="bg-white bg-opacity-10 border-0">
+                            <tr>
+                                <th class="px-4 py-3 border-0">Sl. No</th>
+                                <th class="px-4 py-3 border-0">Submitted Artifact</th>
+                                <th class="px-4 py-3 border-0">Status</th>
+                                <th class="px-4 py-3 border-0 text-end">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for i in submitdata %}
+                            <tr class="border-white border-opacity-5">
+                                <td class="px-4 py-3">{{ forloop.counter }}</td>
+                                <td class="px-4 py-3">
+                                    <div class="d-flex align-items-center gap-3">
+                                        <div class="bg-success bg-opacity-10 text-success p-2 rounded">
+                                            <i class="fas fa-file-alt"></i>
+                                        </div>
+                                        <div>
+                                            <div class="small fw-bold">Submission {{ forloop.counter }}</div>
+                                            <a href="{{ i.ass_file.url }}" class="smaller text-primary text-decoration-none" target="_blank">Download / Preview</a>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-4 py-3">
+                                    <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-3 py-2">
+                                        <i class="fas fa-check-circle me-1"></i> Received
+                                    </span>
+                                </td>
+                                <td class="px-4 py-3 text-end">
+                                    <a href="{% url 'Student:delassign' i.id aid %}" class="btn btn-outline-danger btn-sm border-0 rounded-circle" onclick="return confirm('Remove this submission?')">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="4" class="text-center py-5 text-muted opacity-50">You haven't uploaded anything yet.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function updateFileInfo() {
+    const input = document.getElementById('file_submit');
+    const info = document.getElementById('fileInfo');
+    if (input.files.length > 0) {
+        info.innerHTML = `<i class="fas fa-paperclip me-2"></i> Selected: ${input.files[0].name}`;
+        document.querySelector('.upload-zone').classList.add('border-primary');
+        document.querySelector('.upload-zone').classList.add('bg-primary', 'bg-opacity-10');
+    }
+}
+</script>
+
+{% if msg %}
+<script>
+    alert("{{msg}}");
+</script>
+{% endif %}
+{% endblock %}

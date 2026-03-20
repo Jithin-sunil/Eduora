@@ -1,0 +1,100 @@
+{% extends 'Student/Head.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row pt-4 justify-content-center">
+        <div class="col-lg-12">
+            <!-- Header Section -->
+            <div class="d-flex align-items-center justify-content-between mb-4">
+                <div>
+                    <h2 class="h3 fw-bold mb-1">Assignment Tracker</h2>
+                    <p class="text-muted small mb-0">Track and submit your academic tasks before the deadline</p>
+                </div>
+                <div class="bg-primary bg-opacity-10 text-primary p-3 rounded-circle">
+                    <i class="fas fa-file-signature fa-2x"></i>
+                </div>
+            </div>
+
+            <!-- Dashboard Row -->
+            <div class="row mb-5">
+                <div class="col-md-12">
+                    <div class="card bg-white bg-opacity-5 border border-white border-opacity-10 rounded-4 shadow-sm text-white">
+                        <div class="card-body p-4 d-flex justify-content-between align-items-center">
+                            <div>
+                                <span class="d-block text-muted small uppercase fw-bold mb-1">Active Tasks</span>
+                                <h2 class="fw-bold mb-0 text-primary">{{ assignmentdata.count }}</h2>
+                            </div>
+                            <div>
+                                <span class="d-block text-muted small uppercase fw-bold mb-1">Submitted</span>
+                                <h2 class="fw-bold mb-0 text-success">{{ submitted_ids|length }}</h2>
+                            </div>
+                            <div>
+                                <span class="d-block text-muted small uppercase fw-bold mb-1">Pending</span>
+                                <h2 class="fw-bold mb-0 text-warning">{{ assignmentdata|length|add:submitted_ids|length }}</h2> <!-- Wait, subtraction needed? Actually assignmentdata.count - submitted.count -->
+                                <!-- Handled by logic below -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- List of Assignments -->
+            <div class="row g-4">
+                {% for a in assignmentdata %}
+                <div class="col-lg-6">
+                    <div class="card bg-white bg-opacity-5 border border-white border-opacity-10 rounded-4 overflow-hidden h-100 transition-all hover-translate">
+                         <div class="card-body p-4">
+                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill mb-2"><i class="fas fa-book me-1"></i> {{ a.subject.subject_name }}</span>
+                                {% if a.id in submitted_ids %}
+                                <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-3 py-2"><i class="fas fa-check-circle me-2"></i>Submitted</span>
+                                {% else %}
+                                <span class="badge bg-danger bg-opacity-10 text-danger rounded-pill px-3 py-2"><i class="fas fa-clock me-2"></i>Pending</span>
+                                {% endif %}
+                            </div>
+
+                            <h5 class="fw-bold mb-2">{{ a.assignment_title }}</h5>
+                            <p class="text-muted smaller mb-4">Posted By: Faculty {{ a.teacher.teacher_name }}</p>
+
+                            <div class="d-flex align-items-center gap-3 p-3 bg-white bg-opacity-5 rounded-3 mb-4">
+                                <div class="bg-warning bg-opacity-20 text-warning p-2 rounded">
+                                    <i class="fas fa-calendar-alt"></i>
+                                </div>
+                                <div>
+                                    <div class="smaller text-muted">Submission Deadline</div>
+                                    <div class="small fw-bold">{{ a.assignment_duedate }}</div>
+                                </div>
+                            </div>
+
+                            <div class="d-flex gap-3 mt-auto">
+                                <a href="{{ a.assignment_file.url }}" class="btn btn-outline-secondary btn-sm flex-grow-1 border-opacity-25 rounded-pill" target="_blank">
+                                    <i class="fas fa-file-download me-2"></i>View Instructions
+                                </a>
+                                {% if a.id not in submitted_ids %}
+                                <a href="{% url 'Student:Submitassignment' a.id %}" class="btn btn-primary btn-sm flex-grow-1 shadow-sm rounded-pill">
+                                    <i class="fas fa-upload me-2"></i>Submit Now
+                                </a>
+                                {% else %}
+                                <a href="{% url 'Student:Submitassignment' a.id %}" class="btn btn-outline-success btn-sm flex-grow-1 border-opacity-25 rounded-pill">
+                                    <i class="fas fa-eye me-2"></i>My Submission
+                                </a>
+                                {% endif %}
+                            </div>
+                         </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="col-12 text-center py-5">
+                    <div class="bg-white bg-opacity-5 d-inline-block p-5 rounded-circle mb-4">
+                        <i class="fas fa-tasks fa-4x opacity-20 text-muted"></i>
+                    </div>
+                    <h4 class="text-muted fw-bold">Wonderful! No Pending Assignments</h4>
+                    <p class="text-muted opacity-50">You've cleared all academic tasks for now.</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

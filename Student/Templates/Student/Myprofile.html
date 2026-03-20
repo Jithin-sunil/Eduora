@@ -1,0 +1,143 @@
+{% extends 'Student/Head.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row pt-4 justify-content-center">
+        <!-- Identity Section -->
+        <div class="col-lg-4 col-xl-3">
+            <div class="card bg-white bg-opacity-5 border border-white border-opacity-10 rounded-4 shadow-lg overflow-hidden animate-fadeIn h-100">
+                <div class="bg-primary bg-opacity-10 py-5 text-center position-relative">
+                    <div class="rounded-circle border border-4 border-dark d-inline-block overflow-hidden shadow-lg" style="width: 140px; height: 140px; background: #1e293b;">
+                        <img src="{{ student.student_photo.url }}" class="w-100 h-100 object-fit-cover" alt="Student Profile">
+                    </div>
+                </div>
+                <div class="card-body p-4 text-center">
+                    <h3 class="fw-bold text-white mb-1">{{ student.student_name }}</h3>
+                    <p class="text-primary smaller fw-bold uppercase letter-spacing-1 mb-4">Roll No: {{ student.student_registernumber }}</p>
+                    
+                    <div class="space-y-3 text-start mb-5">
+                        <div class="d-flex align-items-center gap-3 p-3 rounded-3 bg-white bg-opacity-5 border border-white border-opacity-5">
+                            <i class="fas fa-envelope text-primary opacity-50"></i>
+                            <span class="smaller fw-medium">{{ student.student_email }}</span>
+                        </div>
+                        <div class="d-flex align-items-center gap-3 p-3 rounded-3 bg-white bg-opacity-5 border border-white border-opacity-5">
+                            <i class="fas fa-phone text-success opacity-50"></i>
+                            <span class="smaller fw-medium">{{ student.student_contact }}</span>
+                        </div>
+                        <div class="d-flex align-items-center gap-3 p-3 rounded-3 bg-white bg-opacity-5 border border-white border-opacity-5">
+                            <i class="fas fa-map-marker-alt text-warning opacity-50"></i>
+                            <span class="smaller fw-medium">{{ student.student_address|truncatechars:40 }}</span>
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'Student:Editprofile' %}" class="btn btn-primary py-2 rounded-pill shadow-sm fw-bold">
+                            <i class="fas fa-user-edit me-2"></i>Modify Profile
+                        </a>
+                        <a href="{% url 'Student:Changepass' %}" class="btn btn-outline-secondary py-2 rounded-pill fw-bold">
+                            <i class="fas fa-shield-alt me-2"></i>Security Settings
+                        </a>
+                    </div>
+                </div>
+                <div class="bg-white bg-opacity-5 py-3 border-top border-white border-opacity-5 text-center">
+                    <span class="text-muted smaller opacity-50 uppercase letter-spacing-1">Candidate ID: #ST{{ student.id|stringformat:"04d" }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Academic Performance Section -->
+        <div class="col-lg-8 col-xl-9">
+            <div class="row g-4 mb-4">
+                <div class="col-md-4">
+                    <div class="card bg-white bg-opacity-5 border border-white border-opacity-10 rounded-4 p-4 shadow-sm animate-slideIn">
+                        <div class="d-flex align-items-center gap-3 mb-3">
+                            <div class="bg-indigo bg-opacity-20 text-indigo p-3 rounded-circle">
+                                <i class="fas fa-chart-line fa-lg"></i>
+                            </div>
+                            <div>
+                                <h6 class="text-muted smaller uppercase mb-0 fw-bold">Attendance</h6>
+                                <h3 class="fw-bold mb-0">{% if overall_percentage %}{{ overall_percentage|floatformat:1 }}{% else %}0.0{% endif %}%</h3>
+                            </div>
+                        </div>
+                        <div class="progress" style="height: 6px; background: rgba(255,255,255,0.05);">
+                            <div class="progress-bar bg-indigo" style="width: {% if overall_percentage %}{{ overall_percentage }}{% else %}0{% endif %}%"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card bg-white bg-opacity-5 border border-white border-opacity-10 rounded-4 p-4 shadow-sm animate-slideIn" style="animation-delay: 0.1s;">
+                        <div class="d-flex align-items-center gap-3 mb-3">
+                            <div class="bg-emerald bg-opacity-20 text-emerald p-3 rounded-circle">
+                                <i class="fas fa-file-upload fa-lg"></i>
+                            </div>
+                            <div>
+                                <h6 class="text-muted smaller uppercase mb-0 fw-bold">Submissions</h6>
+                                <h3 class="fw-bold mb-0">{{ submitdata|length }}</h3>
+                            </div>
+                        </div>
+                        <p class="smaller text-muted mb-0 opacity-50">Academic assignments uploaded</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card bg-white bg-opacity-5 border border-white border-opacity-10 rounded-4 p-4 shadow-sm animate-slideIn" style="animation-delay: 0.2s;">
+                        <div class="d-flex align-items-center gap-3 mb-3">
+                            <div class="bg-amber bg-opacity-20 text-amber p-3 rounded-circle">
+                                <i class="fas fa-calendar-alt fa-lg"></i>
+                            </div>
+                            <div>
+                                <h6 class="text-muted smaller uppercase mb-0 fw-bold">Pedagogical Leave</h6>
+                                <h3 class="fw-bold mb-0">{{ leavedata|length }}</h3>
+                            </div>
+                        </div>
+                        <p class="smaller text-muted mb-0 opacity-50">Historical absence requests</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Detailed Stats / Recent Activity -->
+            <div class="card bg-white bg-opacity-5 border border-white border-opacity-10 rounded-4 shadow-sm h-100 overflow-hidden">
+                <div class="card-header bg-white bg-opacity-5 py-3 px-4 border-0">
+                    <h5 class="mb-0 fw-bold text-white small uppercase letter-spacing-1">Journal of Recent Activity</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-dark table-hover mb-0 align-middle">
+                            <thead class="bg-white bg-opacity-5 border-0">
+                                <tr>
+                                    <th class="px-4 py-3 border-0 small text-muted uppercase">Context Module</th>
+                                    <th class="px-4 py-3 border-0 small text-muted uppercase">Timeline</th>
+                                    <th class="px-4 py-3 border-0 small text-muted uppercase">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% if submitdata %}
+                                {% for s in submitdata|slice:":5" %}
+                                <tr class="border-white border-opacity-5">
+                                    <td class="px-4 py-3">
+                                        <div class="fw-bold text-white">Assignment Submission</div>
+                                        <div class="smaller text-muted opacity-50">{{ s.assignment.assignment_title }}</div>
+                                    </td>
+                                    <td class="px-4 py-3 small text-muted">{{ s.ass_date }}</td>
+                                    <td class="px-4 py-3">
+                                        <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-3 py-1 rounded-pill smaller fw-bold uppercase">Received</span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                                {% else %}
+                                <tr>
+                                    <td colspan="3" class="text-center py-5 text-muted opacity-50">
+                                        <i class="fas fa-ghost fa-3x mb-3 d-block"></i>
+                                        No recent pedagogical activity detected.
+                                    </td>
+                                </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

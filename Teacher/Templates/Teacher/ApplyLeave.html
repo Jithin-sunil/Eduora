@@ -1,0 +1,118 @@
+{% extends 'Teacher/Head.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row pt-4 justify-content-center">
+        <div class="col-lg-12">
+            <!-- Header Section -->
+            <div class="d-flex align-items-center justify-content-between mb-4">
+                <div>
+                    <h2 class="h3 fw-bold mb-1">Leave Management</h2>
+                    <p class="text-muted small mb-0">Submit absence requests and track your pedagogical leave history</p>
+                </div>
+                <div class="bg-primary bg-opacity-10 text-primary p-3 rounded-circle">
+                    <i class="fas fa-calendar-minus fa-2x"></i>
+                </div>
+            </div>
+
+            <div class="row g-4">
+                 <!-- Application Form -->
+                <div class="col-xl-4">
+                    <div class="card bg-white bg-opacity-5 border border-white border-opacity-10 rounded-4 shadow-sm h-100 animate-slideIn">
+                        <div class="card-body p-4">
+                            <h5 class="fw-bold mb-4">Request Absence</h5>
+                            <form method="post" action="{% url 'Teacher:ApplyLeave' %}">
+                                {% csrf_token %}
+                                <div class="mb-3">
+                                    <label class="form-label text-muted small fw-bold uppercase">Leave Category</label>
+                                    <input type="text" name="txt_title" class="form-control bg-dark border-secondary text-white py-2" required placeholder="e.g. Clinical Conference, Medical Leave">
+                                </div>
+                                <div class="row g-3 mb-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label text-muted small fw-bold uppercase">From Date</label>
+                                        <input type="date" name="txt_fromdate" class="form-control bg-dark border-secondary text-white py-2" required>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label text-muted small fw-bold uppercase">To Date</label>
+                                        <input type="date" name="txt_todate" class="form-control bg-dark border-secondary text-white py-2" required>
+                                    </div>
+                                </div>
+                                <div class="mb-4">
+                                    <label class="form-label text-muted small fw-bold uppercase">Detailed Reason</label>
+                                    <textarea name="txt_reason" class="form-control bg-dark border-secondary text-white py-2" rows="4" required placeholder="Provide clinical or personal context..."></textarea>
+                                </div>
+                                <div class="d-grid mt-5">
+                                    <button type="submit" class="btn btn-primary py-2 rounded-pill shadow-sm fw-bold">
+                                        <i class="fas fa-paper-plane me-2"></i>Post Application
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- History Table -->
+                <div class="col-xl-8">
+                    <div class="card bg-white bg-opacity-5 border border-white border-opacity-10 rounded-4 shadow-sm overflow-hidden h-100 animate-fadeIn">
+                        <div class="card-header bg-white bg-opacity-5 py-3 px-4 border-0">
+                            <h5 class="mb-0 fw-bold small text-muted uppercase letter-spacing-1">Application Journal</h5>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-dark table-hover mb-0 align-middle">
+                                <thead class="bg-white bg-opacity-5">
+                                    <tr>
+                                        <th class="px-4 py-3 border-0 small text-muted uppercase">Duration & Title</th>
+                                        <th class="px-4 py-3 border-0 small text-muted uppercase">Context</th>
+                                        <th class="px-4 py-3 border-0 small text-muted uppercase">Status</th>
+                                        <th class="px-4 py-3 border-0 small text-muted uppercase text-end">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for l in leavedata %}
+                                    <tr class="border-white border-opacity-5">
+                                        <td class="px-4 py-3">
+                                            <div class="fw-bold text-primary">{{ l.leave_title }}</div>
+                                            <div class="smaller text-muted opacity-50">{{ l.leave_fromdate }} to {{ l.leave_todate }}</div>
+                                        </td>
+                                        <td class="px-4 py-3 small opacity-75">
+                                            {{ l.leave_reason|truncatechars:50 }}
+                                        </td>
+                                        <td class="px-4 py-3">
+                                            {% if l.leave_status == 0 %}
+                                            <span class="badge bg-warning bg-opacity-10 text-warning px-3 py-2 rounded-pill border border-warning border-opacity-25">Pending</span>
+                                            {% elif l.leave_status == 1 %}
+                                            <span class="badge bg-success bg-opacity-10 text-success px-3 py-2 rounded-pill border border-success border-opacity-25">Approved</span>
+                                            {% else %}
+                                            <span class="badge bg-danger bg-opacity-10 text-danger px-3 py-2 rounded-pill border border-danger border-opacity-25">Rejected</span>
+                                            {% endif %}
+                                        </td>
+                                        <td class="px-4 py-3 text-end">
+                                            {% if l.leave_status == 0 %}
+                                            <a href="{% url 'Teacher:delteacherleave' l.id %}" class="btn btn-sm btn-outline-danger border-0 rounded-circle"><i class="fas fa-trash"></i></a>
+                                            {% else %}
+                                            <i class="fas fa-lock text-muted opacity-25"></i>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="4" class="text-center py-5 text-muted opacity-50">No leave history found.</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if msg %}
+<script>
+    alert("{{msg}}");
+</script>
+{% endif %}
+{% endblock %}

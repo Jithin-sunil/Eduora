@@ -1,0 +1,4 @@
+<option value="">---Select---</option>
+{% for i in subjectdata %}
+<option value="{{i.subject.id}}">{{i.subject.subject_name}}</option>
+{% endfor %}

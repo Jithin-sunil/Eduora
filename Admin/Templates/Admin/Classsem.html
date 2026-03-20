@@ -1,0 +1,81 @@
+{% extends 'Admin/Head.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row pt-4 justify-content-center">
+        <div class="col-lg-8">
+            <!-- Header Section -->
+            <div class="d-flex align-items-center justify-content-between mb-4">
+                <div>
+                    <h2 class="h3 fw-bold mb-1">Academic Timelines</h2>
+                    <p class="text-muted small mb-0">Configure program semesters and set specific timeline milestones</p>
+                </div>
+                <div class="bg-primary bg-opacity-10 text-primary p-3 rounded-circle">
+                    <i class="fas fa-history fa-2x"></i>
+                </div>
+            </div>
+
+            <!-- Configuration Card -->
+            <div class="card bg-white bg-opacity-5 border border-white border-opacity-10 rounded-4 shadow-sm mb-5 animate-slideIn">
+                <div class="card-body p-4 text-center">
+                    <form action="" method="post">
+                        {% csrf_token %}
+                        <div class="row align-items-end g-3 justify-content-center">
+                            <div class="col-md-7">
+                                <label class="form-label text-muted small fw-bold uppercase">Activate Semester Cycle</label>
+                                <select name="sel_semester" id="sel_semester" class="form-select bg-dark border-secondary text-white py-2" required>
+                                    <option value="">-- Choose Cycle --</option>
+                                    {% for i in semesterdata %}
+                                    <option value="{{i.id}}">{{i.semester_name}}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <button type="submit" class="btn btn-primary w-100 py-2 rounded-3 shadow">
+                                    <i class="fas fa-plus-circle me-1"></i> Activate
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Log Table Card -->
+            <div class="card bg-white bg-opacity-5 border border-white border-opacity-10 rounded-4 shadow-sm overflow-hidden animate-fadeIn">
+                 <div class="card-header bg-white bg-opacity-5 py-3 px-4 border-0">
+                    <h5 class="mb-0 fw-bold small text-muted uppercase letter-spacing-1">Configured Active Cycles</h5>
+                 </div>
+                <div class="table-responsive">
+                    <table class="table table-dark table-hover mb-0 align-middle">
+                        <thead class="bg-white bg-opacity-10">
+                            <tr>
+                                <th class="px-4 py-3 border-0 small text-muted uppercase">Sl. No</th>
+                                <th class="px-4 py-3 border-0 small text-muted uppercase">Semester Designation</th>
+                                <th class="px-4 py-3 border-0 small text-muted uppercase text-end">Manage</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for i in classsemdata %}
+                            <tr class="border-white border-opacity-5">
+                                <td class="px-4 py-3 text-muted">{{ forloop.counter }}</td>
+                                <td class="px-4 py-3 fw-bold">{{ i.semester.semester_name }}</td>
+                                <td class="px-4 py-3 text-end">
+                                    <a href="{% url 'Admin:delclasssem' i.id %}" class="btn btn-sm btn-outline-danger border-0 rounded-circle" onclick="return confirm('Abort this semester mapping?')">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="3" class="text-center py-5 text-muted opacity-50">No semesters active for this program.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

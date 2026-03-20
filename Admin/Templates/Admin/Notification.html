@@ -1,0 +1,105 @@
+{% extends 'Admin/Head.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row pt-4 justify-content-center">
+        <div class="col-lg-12 col-xl-11">
+            <!-- Header Section -->
+            <div class="d-flex align-items-center justify-content-between mb-4">
+                <div>
+                    <h2 class="h3 fw-bold mb-1">Campus Announcements</h2>
+                    <p class="text-muted small mb-0">Broadcast critical college updates and administrative notifications</p>
+                </div>
+                <div class="bg-primary bg-opacity-10 text-primary p-3 rounded-circle shadow-sm">
+                    <i class="fas fa-bullhorn fa-2x"></i>
+                </div>
+            </div>
+
+            <div class="row g-4">
+                 <!-- Entry Form -->
+                <div class="col-lg-5 col-xl-4">
+                    <div class="card bg-white bg-opacity-5 border border-white border-opacity-10 rounded-4 shadow h-100 animate-slideIn">
+                        <div class="card-body p-4">
+                            <h5 class="fw-bold mb-4">Post Broadcast</h5>
+                            <form method="post" action="{% url 'Admin:Notification' %}">
+                                {% csrf_token %}
+                                <div class="mb-3">
+                                    <label class="form-label text-muted small fw-bold uppercase">Heading / Subject</label>
+                                    <input type="text" name="txt_title" class="form-control bg-dark border-secondary text-white py-2 shadow-sm" required placeholder="e.g. Clinical Practical Postponed">
+                                </div>
+                                <div class="mb-4">
+                                    <label class="form-label text-muted small fw-bold uppercase">Broadcast Payload</label>
+                                    <textarea name="txt_content" class="form-control bg-dark border-secondary text-white py-3 shadow-sm" rows="5" required placeholder="Detailed message for students and staff..."></textarea>
+                                </div>
+                                <div class="d-grid shadow">
+                                    <button type="submit" class="btn btn-primary py-2 rounded-pill fw-bold">
+                                        <i class="fas fa-paper-plane me-2"></i>Apply Blast
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- History View -->
+                <div class="col-lg-7 col-xl-8">
+                    <div class="card bg-white bg-opacity-5 border border-white border-opacity-10 rounded-4 shadow-sm overflow-hidden h-100 animate-fadeIn">
+                        <div class="card-header bg-white bg-opacity-5 py-3 px-4 border-0">
+                            <h5 class="mb-0 fw-bold small text-muted uppercase letter-spacing-1">Blast Journal</h5>
+                        </div>
+                        <div class="card-body p-4">
+                            <div class="row g-3">
+                                {% for n in notifications %}
+                                <div class="col-xl-6">
+                                    <div class="p-4 rounded-4 bg-white bg-opacity-5 border border-white border-opacity-10 h-100 position-relative hover-shadow transition-all group">
+                                        <div class="d-flex justify-content-between align-items-start mb-3">
+                                            <div class="bg-primary bg-opacity-10 text-primary p-2 rounded-3">
+                                                <i class="fas fa-volume-up smaller"></i>
+                                            </div>
+                                            <a href="{% url 'Admin:delnotification' n.id %}" class="btn btn-sm text-danger border-0 rounded-circle opacity-0 group-hover-opacity-100 transition-all opacity-75" onclick="return confirm('Expunge this broadcast?')">
+                                                <i class="fas fa-trash-alt"></i>
+                                            </a>
+                                        </div>
+                                        <h6 class="fw-bold mb-2 text-white">{{ n.notification_title }}</h6>
+                                        <p class="small text-muted mb-4 line-clamp-3">{{ n.notification_content }}</p>
+                                        <div class="d-flex align-items-center justify-content-between mt-auto pt-3 border-top border-white border-opacity-5">
+                                            <span class="smaller text-muted opacity-50"><i class="fas fa-calendar-day me-1"></i> {{ n.notification_date }}</span>
+                                            <span class="smaller text-primary fw-bold uppercase letter-spacing-1">Live</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% empty %}
+                                <div class="col-12 text-center text-muted py-5">
+                                    <i class="fas fa-ghost fa-3x opacity-20 mb-3"></i>
+                                    <p class="mb-0">No active broadcasts in the journal.</p>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.line-clamp-3 {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+    -webkit-box-orient: vertical;  
+    overflow: hidden;
+}
+.group:hover .opacity-0 {
+    opacity: 1 !important;
+}
+</style>
+
+{% if msg %}
+<script>
+    alert("{{msg}}");
+</script>
+{% endif %}
+{% endblock %}

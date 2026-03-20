@@ -1,0 +1,83 @@
+{% extends 'Admin/Head.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row pt-4 justify-content-center">
+        <div class="col-lg-10 col-xl-8">
+            <!-- Header Section -->
+            <div class="d-flex align-items-center justify-content-between mb-4">
+                <div>
+                    <h2 class="h3 fw-bold mb-1">Administrative Duty Roles</h2>
+                    <p class="text-muted small mb-0">Define specific oversight purposes for faculty assignments (e.g. Lab In-Charge, Clinical Supervisor)</p>
+                </div>
+                <div class="bg-primary bg-opacity-10 text-primary p-3 rounded-circle">
+                    <i class="fas fa-id-badge fa-2x"></i>
+                </div>
+            </div>
+
+            <!-- Entry Form -->
+            <div class="card bg-white bg-opacity-5 border border-white border-opacity-10 rounded-4 shadow-sm mb-5 animate-slideIn">
+                <div class="card-body p-4">
+                    <form action="" method="post">
+                        {% csrf_token %}
+                        <div class="row g-3 align-items-end">
+                            <div class="col-md-9">
+                                <label class="form-label text-muted small fw-bold uppercase">Purpose Title</label>
+                                <input type="text" name="txt_purpose" id="txt_purpose" required class="form-control bg-dark border-secondary text-white py-2 shadow-sm" placeholder="e.g. Clinical Records Moderator">
+                            </div>
+                            <div class="col-md-3">
+                                <button type="submit" class="btn btn-primary w-100 py-2 rounded-3 shadow-sm">
+                                    <i class="fas fa-plus-circle me-2"></i>Add Role
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- List Card -->
+            <div class="card bg-white bg-opacity-5 border border-white border-opacity-10 rounded-4 shadow-sm overflow-hidden animate-fadeIn">
+                <div class="card-header bg-white bg-opacity-5 py-3 px-4 border-0">
+                    <h5 class="mb-0 fw-bold small text-muted uppercase">Authorized Roles</h5>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-dark table-hover mb-0 align-middle">
+                        <thead class="bg-white bg-opacity-10 border-0">
+                            <tr>
+                                <th class="px-4 py-3 border-0 small text-muted uppercase">Sl. No</th>
+                                <th class="px-4 py-3 border-0 small text-muted uppercase">Designation Purpose</th>
+                                <th class="px-4 py-3 border-0 small text-muted uppercase text-end">Control</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for p in purposedata %}
+                            <tr class="border-white border-opacity-5">
+                                <td class="px-4 py-3 text-muted">{{ forloop.counter }}</td>
+                                <td class="px-4 py-3 fw-bold">{{ p.purpose_name }}</td>
+                                <td class="px-4 py-3 text-end">
+                                    <a href="{% url 'Admin:delpurpose' p.id %}" class="btn btn-sm btn-outline-danger border-0 rounded-circle" onclick="return confirm('Remove this duty designation?')">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="3" class="text-center py-5 text-muted opacity-50">No administrative roles defined yet.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if msg %}
+<script>
+    alert("{{msg}}")
+    window.location = "{% url 'Admin:Purpose' %}"
+</script>
+{% endif %}
+{% endblock %}

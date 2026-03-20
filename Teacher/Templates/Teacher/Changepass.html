@@ -1,0 +1,56 @@
+{% extends 'Teacher/Head.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row pt-5 justify-content-center">
+        <div class="col-lg-4">
+            <!-- Header Section -->
+            <div class="text-center mb-5">
+                <div class="bg-primary bg-opacity-10 text-primary p-4 rounded-circle d-inline-block mb-3">
+                    <i class="fas fa-shield-alt fa-3x"></i>
+                </div>
+                <h2 class="h3 fw-bold mb-1 text-white">Security Update</h2>
+                <p class="text-muted small">Synchronize your access credentials for improved account safety</p>
+            </div>
+
+            <!-- Password Card -->
+            <div class="card bg-white bg-opacity-5 border border-white border-opacity-10 rounded-4 shadow-lg animate-slideIn">
+                <div class="card-body p-5">
+                    <form action="" method="post">
+                        {% csrf_token %}
+                        <div class="mb-4">
+                            <label class="form-label text-muted small fw-bold uppercase letter-spacing-1">Current Entry Code</label>
+                            <input type="password" name="txt_password" class="form-control bg-dark border-secondary text-white py-2 shadow-sm" required placeholder="••••••••">
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label text-muted small fw-bold uppercase letter-spacing-1">Proposed Password</label>
+                            <input type="password" name="txt_newpassword" class="form-control bg-dark border-secondary text-white py-2 shadow-sm" required placeholder="••••••••" pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}" title="Must contain at least one number and one uppercase and lowercase letter, and at least 8 or more characters">
+                        </div>
+                        <div class="mb-5">
+                            <label class="form-label text-muted small fw-bold uppercase letter-spacing-1">Confirm Identity Code</label>
+                            <input type="password" name="txt_repassword" class="form-control bg-dark border-secondary text-white py-2 shadow-sm" required placeholder="••••••••">
+                        </div>
+
+                        <div class="d-grid shadow-lg">
+                            <button type="submit" class="btn btn-primary py-3 rounded-pill fw-bold transform-active transition-all">
+                                <i class="fas fa-key me-2"></i>Apply Credentials
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                
+                <div class="bg-white bg-opacity-5 py-4 border-top border-white border-opacity-10 text-center">
+                    <a href="{% url 'Teacher:Myprofile' %}" class="text-muted small text-decoration-none hover-underline"><i class="fas fa-arrow-left me-1"></i> Return to Safety</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if msg %}
+<script>
+    alert("{{msg}}");
+</script>
+{% endif %}
+{% endblock %}

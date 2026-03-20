@@ -1,0 +1,274 @@
+{% extends 'Admin/Head.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+    .admin-welcome {
+        background: linear-gradient(135deg, rgba(30, 41, 59, 0.8), rgba(51, 65, 85, 0.8));
+        backdrop-filter: blur(12px);
+        border-radius: 24px;
+        padding: 2.5rem;
+        margin-bottom: 2rem;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        text-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+
+    .dashboard-stat-card {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 24px;
+        padding: 1.5rem;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        height: 100%;
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+    }
+
+    .dashboard-stat-card:hover {
+        transform: translateY(-8px);
+        background: rgba(255, 255, 255, 0.08);
+        border-color: var(--primary-color);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+    }
+
+    .stat-icon {
+        width: 64px;
+        height: 64px;
+        border-radius: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.75rem;
+        flex-shrink: 0;
+    }
+
+    .recent-list-card {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 24px;
+        height: 100%;
+        overflow: hidden;
+    }
+
+    .recent-list-header {
+        padding: 1.5rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .recent-item {
+        padding: 1.25rem 1.5rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        transition: background 0.2s ease;
+    }
+
+    .recent-item:hover {
+        background: rgba(255, 255, 255, 0.02);
+    }
+
+    .recent-item:last-child {
+        border-bottom: none;
+    }
+
+    .badge-soft-warning { background: rgba(245, 158, 11, 0.15); color: #fbbf24; }
+    .badge-soft-danger { background: rgba(239, 68, 68, 0.15); color: #f87171; }
+
+    .quick-action {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 1rem;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 16px;
+        text-decoration: none;
+        color: white;
+        transition: all 0.3s ease;
+    }
+
+    .quick-action:hover {
+        background: rgba(99, 102, 241, 0.1);
+        border-color: #6366f1;
+        transform: translateX(10px);
+        color: #6366f1;
+    }
+
+    .quick-icon {
+        width: 45px;
+        height: 45px;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+    }
+</style>
+
+<div class="container-fluid py-4">
+    <!-- Welcome Header -->
+    <div class="admin-welcome animate-fadeIn">
+        <div class="row align-items-center">
+            <div class="col-md-9">
+                <h6 class="text-primary text-uppercase fw-bold mb-2">Institutional Oversight</h6>
+                <h1 class="display-5 fw-bold mb-2">College Administration Dashboard</h1>
+                <p class="mb-0 opacity-75">Control academic infrastructure, faculty roles, and institutional communications.</p>
+            </div>
+            <div class="col-md-3 text-md-end mt-4 mt-md-0">
+                <div class="d-inline-flex align-items-center bg-success bg-opacity-10 text-success px-4 py-2 rounded-pill">
+                    <span class="live-status me-2"></span> System Operational
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Grid -->
+    <div class="row g-4 mb-5">
+        <div class="col-xl-3 col-md-6">
+            <div class="dashboard-stat-card">
+                <div class="stat-icon bg-primary bg-opacity-10 text-primary">
+                    <i class="fas fa-building"></i>
+                </div>
+                <div>
+                    <h3 class="fw-bold mb-0">{{ dept_count }}</h3>
+                    <p class="text-muted small mb-0">Departments</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="dashboard-stat-card">
+                <div class="stat-icon bg-success bg-opacity-10 text-success">
+                    <i class="fas fa-user-tie"></i>
+                </div>
+                <div>
+                    <h3 class="fw-bold mb-0">{{ teacher_count }}</h3>
+                    <p class="text-muted small mb-0">Total Faculty</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="dashboard-stat-card">
+                <div class="stat-icon bg-info bg-opacity-10 text-info">
+                    <i class="fas fa-graduation-cap"></i>
+                </div>
+                <div>
+                    <h3 class="fw-bold mb-0">{{ student_count }}</h3>
+                    <p class="text-muted small mb-0">Students Enrolled</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="dashboard-stat-card">
+                <div class="stat-icon bg-warning bg-opacity-10 text-warning">
+                    <i class="fas fa-book-open"></i>
+                </div>
+                <div>
+                    <h3 class="fw-bold mb-0">{{ subject_count }}</h3>
+                    <p class="text-muted small mb-0">Curriculum Subjects</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-5">
+        <!-- Pending Oversight -->
+        <div class="col-xl-8">
+            <div class="row g-4">
+                <!-- Teacher Leaves -->
+                <div class="col-md-6">
+                    <div class="recent-list-card">
+                        <div class="recent-list-header">
+                            <h5 class="fw-bold mb-0"><i class="fas fa-envelope-open-text text-warning me-2"></i>Teacher Leaves</h5>
+                            <span class="badge rounded-pill bg-warning text-dark">{{ leave_count }} Pending</span>
+                        </div>
+                        <div class="list-body">
+                            {% for leave in pending_leaves %}
+                            <div class="recent-item">
+                                <div class="d-flex justify-content-between align-items-start mb-1">
+                                    <h6 class="fw-bold mb-0">{{ leave.teacher.teacher_name }}</h6>
+                                    <span class="small text-muted">{{ leave.leave_date }}</span>
+                                </div>
+                                <p class="small text-muted mb-0 text-truncate">{{ leave.leave_title }}</p>
+                                <div class="mt-2 text-end">
+                                    <a href="{% url 'Admin:AdminViewTeacherLeave' %}" class="btn btn-sm btn-outline-primary py-0 small">Action</a>
+                                </div>
+                            </div>
+                            {% empty %}
+                            <div class="p-5 text-center text-muted small">No pending leave requests.</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Student Complaints -->
+                <div class="col-md-6">
+                    <div class="recent-list-card">
+                        <div class="recent-list-header">
+                            <h5 class="fw-bold mb-0"><i class="fas fa-exclamation-triangle text-danger me-2"></i>Student Complaints</h5>
+                            <span class="badge rounded-pill bg-danger">{{ complaint_count }} New</span>
+                        </div>
+                        <div class="list-body">
+                            {% for comp in pending_complaints %}
+                            <div class="recent-item">
+                                <div class="d-flex justify-content-between align-items-start mb-1">
+                                    <h6 class="fw-bold mb-0">{{ comp.student.student_name }}</h6>
+                                    <span class="small text-muted">{{ comp.com_date }}</span>
+                                </div>
+                                <p class="small text-muted mb-0 text-truncate">{{ comp.comp_title }}</p>
+                                <div class="mt-2 text-end">
+                                    <a href="{% url 'Admin:Viewcomplaint' %}" class="btn btn-sm btn-outline-danger py-0 small">Reply</a>
+                                </div>
+                            </div>
+                            {% empty %}
+                            <div class="p-5 text-center text-muted small">No pending complaints.</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Controls -->
+        <div class="col-xl-4">
+            <h5 class="fw-bold mb-4">Strategic Controls</h5>
+            <div class="d-flex flex-column gap-3">
+                <a href="{% url 'Admin:Addteacher' %}" class="quick-action">
+                    <div class="quick-icon"><i class="fas fa-user-plus"></i></div>
+                    <div class="flex-grow-1">
+                        <div class="fw-bold">Faculty Admission</div>
+                        <div class="small text-muted">Register and assign teachers</div>
+                    </div>
+                    <i class="fas fa-chevron-right opacity-30"></i>
+                </a>
+                <a href="{% url 'Admin:timetable' %}" class="quick-action">
+                    <div class="quick-icon"><i class="fas fa-calendar-alt"></i></div>
+                    <div class="flex-grow-1">
+                        <div class="fw-bold">Dynamic Scheduling</div>
+                        <div class="small text-muted">Master timetable management</div>
+                    </div>
+                    <i class="fas fa-chevron-right opacity-30"></i>
+                </a>
+                <a href="{% url 'Admin:Notification' %}" class="quick-action">
+                    <div class="quick-icon"><i class="fas fa-broadcast-tower"></i></div>
+                    <div class="flex-grow-1">
+                        <div class="fw-bold">Institutional Broadcast</div>
+                        <div class="small text-muted">Official announcements</div>
+                    </div>
+                    <i class="fas fa-chevron-right opacity-30"></i>
+                </a>
+                <a href="{% url 'Admin:SpecialTimetable' %}" class="quick-action">
+                    <div class="quick-icon"><i class="fas fa-calendar-check"></i></div>
+                    <div class="flex-grow-1">
+                        <div class="fw-bold">Daily Override</div>
+                        <div class="small text-muted">Special timetable for leave days</div>
+                    </div>
+                    <i class="fas fa-chevron-right opacity-30"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,50 @@
+{% extends 'Admin/Head.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row pt-5 justify-content-center">
+        <div class="col-lg-5">
+            <!-- Header Section -->
+            <div class="text-center mb-5">
+                <div class="bg-primary bg-opacity-10 text-primary p-4 rounded-circle d-inline-block mb-3">
+                    <i class="fas fa-microscope fa-3x"></i>
+                </div>
+                <h2 class="h3 fw-bold mb-1">Administrative Role Allocation</h2>
+                <p class="text-muted small mb-0">Assign specific facility or lab supervision responsibilities to faculty</p>
+            </div>
+
+            <div class="card bg-white bg-opacity-5 border border-white border-opacity-10 rounded-4 shadow-sm animate-slideIn">
+                <div class="card-body p-5">
+                    <form action="" method="post">
+                        {% csrf_token %}
+                        <div class="mb-5">
+                            <label class="form-label text-muted small fw-bold uppercase">Designated Purpose</label>
+                            <select name="sel_purpose" required id="sel_purpose" class="form-select bg-dark border-secondary text-white py-3 fs-5">
+                                <option value="">-- Select Authority Level --</option>
+                                {% for i in purposedata %}
+                                <option value="{{i.id}}">{{i.purpose_name}}</option>
+                                {% endfor %}
+                            </select>
+                            <div class="smaller text-muted mt-3 text-center opacity-75">
+                                <i class="fas fa-info-circle me-1"></i> This assignment grants administrative access to corresponding student clinical and lab data.
+                            </div>
+                        </div>
+                        <div class="d-grid shadow">
+                            <button type="submit" class="btn btn-primary py-3 rounded-pill fw-bold">
+                                <i class="fas fa-shield-alt me-2"></i>Map Responsibility
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if msg %}
+<script>
+    alert("{{msg}}");
+</script>
+{% endif %}
+{% endblock %}

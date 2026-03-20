@@ -1,0 +1,211 @@
+{% extends 'Student/Head.html' %}
+{% block content %}
+
+<style>
+    .change-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 400px;
+    }
+
+    .change-card {
+        background: rgba(255, 255, 255, 0.04) !important;
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 24px;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+        padding: 35px;
+        animation: fadeSlide 0.8s ease;
+    }
+
+    @keyframes fadeSlide {
+        from {
+            opacity: 0;
+            transform: translateY(40px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .card-header-modern {
+        background: linear-gradient(135deg, #6366f1, #a855f7);
+        border-radius: 16px 16px 0 0;
+        padding: 20px;
+        color: white;
+        text-align: center;
+        font-weight: 700;
+        font-size: 22px;
+        letter-spacing: 1px;
+    }
+
+    .form-control {
+        background: rgba(255, 255, 255, 0.05) !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        color: white !important;
+        border-radius: 12px;
+        padding: 12px 15px;
+    }
+
+    .password-wrapper {
+        position: relative;
+    }
+
+    .toggle-eye {
+        position: absolute;
+        right: 12px;
+        top: 38px;
+        cursor: pointer;
+        color: #777;
+    }
+
+    .toggle-eye:hover {
+        color: #4e73df;
+    }
+
+    .btn-modern {
+        border-radius: 25px;
+        padding: 8px 25px;
+        font-weight: 500;
+    }
+
+    .password-strength {
+        font-size: 13px;
+        margin-top: 5px;
+    }
+</style>
+
+<div class="container change-container">
+
+    <div class="col-lg-5">
+
+        <div class="change-card">
+
+            <div class="card-header-modern">
+                <i class="fa fa-key"></i> Change Password
+            </div>
+
+            <div class="card-body mt-3">
+
+                <form method="post">
+                    {% csrf_token %}
+
+                    <div class="form-group mb-3 password-wrapper">
+                        <label><i class="fa fa-lock"></i> Old Password</label>
+                        <input type="password" class="form-control" id="oldpass" name="txt_password" required>
+                        <i class="fa fa-eye toggle-eye" onclick="togglePassword('oldpass',this)"></i>
+                    </div>
+
+                    <div class="form-group mb-3 password-wrapper">
+                        <label><i class="fa fa-key"></i> New Password</label>
+                        <input type="password" class="form-control" id="newpass" name="txt_newpassword"
+                            pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}" required onkeyup="checkStrength()">
+                        <i class="fa fa-eye toggle-eye" onclick="togglePassword('newpass',this)"></i>
+
+                        <div id="strength" class="password-strength"></div>
+
+                    </div>
+
+                    <div class="form-group mb-3 password-wrapper">
+                        <label><i class="fa fa-check-circle"></i> Confirm Password</label>
+                        <input type="password" class="form-control" id="confpass" name="txt_repassword" required
+                            onkeyup="checkMatch()">
+                        <i class="fa fa-eye toggle-eye" onclick="togglePassword('confpass',this)"></i>
+
+                        <div id="match" class="password-strength"></div>
+
+                    </div>
+
+                    <div class="text-center mt-4">
+
+                        <button type="submit" class="btn btn-success btn-modern">
+                            <i class="fa fa-save"></i> Change
+                        </button>
+
+                        <button type="reset" class="btn btn-secondary btn-modern">
+                            <i class="fa fa-times"></i> Cancel
+                        </button>
+
+                    </div>
+
+                </form>
+
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+
+    function togglePassword(id, icon) {
+
+        var field = document.getElementById(id);
+
+        if (field.type === "password") {
+            field.type = "text";
+            icon.classList.remove("fa-eye");
+            icon.classList.add("fa-eye-slash");
+        }
+        else {
+            field.type = "password";
+            icon.classList.remove("fa-eye-slash");
+            icon.classList.add("fa-eye");
+        }
+
+    }
+
+
+    function checkStrength() {
+
+        var pass = document.getElementById("newpass").value;
+        var strength = document.getElementById("strength");
+
+        if (pass.length < 6) {
+            strength.innerHTML = "Weak Password";
+            strength.style.color = "red";
+        }
+        else if (pass.match(/[a-z]/) && pass.match(/[A-Z]/) && pass.match(/[0-9]/)) {
+            strength.innerHTML = "Strong Password";
+            strength.style.color = "green";
+        }
+        else {
+            strength.innerHTML = "Medium Password";
+            strength.style.color = "orange";
+        }
+
+    }
+
+
+    function checkMatch() {
+
+        var pass = document.getElementById("newpass").value;
+        var confirm = document.getElementById("confpass").value;
+        var msg = document.getElementById("match");
+
+        if (pass === confirm) {
+            msg.innerHTML = "Passwords Match";
+            msg.style.color = "green";
+        }
+        else {
+            msg.innerHTML = "Passwords Do Not Match";
+            msg.style.color = "red";
+        }
+
+    }
+
+</script>
+
+{% if msg %}
+
+<script>
+    alert("{{msg}}")
+    window.location = "{% url 'Student:Myprofile' %}"
+</script>
+
+{% endif %}
+
+{% endblock %}

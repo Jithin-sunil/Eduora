@@ -1,0 +1,88 @@
+{% extends 'Teacher/Head.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row pt-4 justify-content-center">
+        <div class="col-lg-12">
+            <!-- Header Section -->
+            <div class="d-flex align-items-center justify-content-between mb-4">
+                <div>
+                    <h2 class="h3 fw-bold mb-1">Instructional Master Plan</h2>
+                    <p class="text-muted small mb-0">Review your weekly academic engagements and clinical session blocks</p>
+                </div>
+                <div class="bg-primary bg-opacity-10 text-primary p-3 rounded-circle shadow-sm">
+                    <i class="fas fa-calendar-alt fa-2x"></i>
+                </div>
+            </div>
+
+            {% if academicyear %}
+            <div class="badge bg-primary bg-opacity-10 text-primary px-4 py-2 rounded-pill border border-primary border-opacity-25 mb-4">
+                <i class="fas fa-history me-2"></i> Academic Session: {{ academicyear.academicyear_name }}
+            </div>
+            {% endif %}
+
+            <!-- Timetable Grid -->
+            <div class="card bg-white bg-opacity-5 border border-white border-opacity-10 rounded-4 shadow-sm overflow-hidden animate-fadeIn">
+                <div class="table-responsive">
+                    <table class="table table-dark table-hover mb-0 align-middle">
+                        <thead class="bg-white bg-opacity-10">
+                            <tr>
+                                <th class="px-4 py-4 border-0 text-muted small fw-bold uppercase text-center" style="width: 150px;">Cycle Day</th>
+                                <th class="px-4 py-4 border-0 text-muted small fw-bold uppercase text-center">Session 01</th>
+                                <th class="px-4 py-4 border-0 text-muted small fw-bold uppercase text-center">Session 02</th>
+                                <th class="px-4 py-4 border-0 text-muted small fw-bold uppercase text-center">Session 03</th>
+                                <th class="px-4 py-4 border-0 text-primary small fw-bold uppercase text-center bg-white bg-opacity-5" style="width: 80px;">Interval</th>
+                                <th class="px-4 py-4 border-0 text-muted small fw-bold uppercase text-center">Session 04</th>
+                                <th class="px-4 py-4 border-0 text-muted small fw-bold uppercase text-center">Session 05</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for day in days %}
+                            <tr class="border-white border-opacity-5">
+                                <td class="px-4 py-4 fw-bold text-center bg-white bg-opacity-5 fs-5">{{ day }}</td>
+                                
+                                {% for hour in "123" %}
+                                <td class="px-3 py-4 text-center">
+                                    {% for t in timetable %}
+                                        {% if t.day == day and t.hour == hour %}
+                                        <div class="p-3 rounded-3 bg-white bg-opacity-5 border border-white border-opacity-5 shadow-sm hover-border-primary transition-all">
+                                            <div class="fw-bold text-white small mb-1">{{ t.subject.subject_name }}</div>
+                                            <div class="smaller text-muted opacity-50 uppercase">{{ t.subject.course.course_name }} | Sem {{ t.subject.semester.semester_name }}</div>
+                                        </div>
+                                        {% endif %}
+                                    {% endfor %}
+                                </td>
+                                {% endfor %}
+
+                                {% if forloop.first %}
+                                <td rowspan="5" class="bg-white bg-opacity-5 text-center fw-bold text-muted small letter-spacing-2" style="writing-mode: vertical-lr;">
+                                    I&nbsp;N&nbsp;T&nbsp;E&nbsp;R&nbsp;V&nbsp;A&nbsp;L
+                                </td>
+                                {% endif %}
+
+                                {% for hour in "45" %}
+                                <td class="px-3 py-4 text-center">
+                                    {% for t in timetable %}
+                                        {% if t.day == day and t.hour == hour %}
+                                        <div class="p-3 rounded-3 bg-white bg-opacity-5 border border-white border-opacity-5 shadow-sm hover-border-primary transition-all">
+                                            <div class="fw-bold text-white small mb-1">{{ t.subject.subject_name }}</div>
+                                            <div class="smaller text-muted opacity-50 uppercase">{{ t.subject.course.course_name }} | Sem {{ t.subject.semester.semester_name }}</div>
+                                        </div>
+                                        {% endif %}
+                                    {% endfor %}
+                                </td>
+                                {% endfor %}
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="mt-4 text-center text-muted small opacity-50">
+                <i class="fas fa-info-circle me-1"></i> Timetable is subject to dynamic overrides by administration.
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

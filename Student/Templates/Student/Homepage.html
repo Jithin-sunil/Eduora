@@ -1,0 +1,349 @@
+{% extends 'Student/Head.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+    .welcome-card {
+        background: linear-gradient(135deg, #6366f1, #a855f7);
+        border-radius: 30px;
+        padding: 4rem 3rem;
+        margin-bottom: 3rem;
+        position: relative;
+        overflow: hidden;
+        border: none;
+        box-shadow: 0 20px 40px rgba(99, 102, 241, 0.4);
+    }
+
+    .welcome-card::before {
+        content: '';
+        position: absolute;
+        top: -100px;
+        right: -100px;
+        width: 300px;
+        height: 300px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 50%;
+    }
+
+    .welcome-card::after {
+        content: '';
+        position: absolute;
+        bottom: -50px;
+        left: 10%;
+        width: 150px;
+        height: 150px;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 50%;
+    }
+
+    .stat-card {
+        background: rgba(255, 255, 255, 0.03);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        border-radius: 24px;
+        padding: 2rem;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        height: 100%;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-10px);
+        background: rgba(255, 255, 255, 0.06);
+        border-color: rgba(99, 102, 241, 0.3);
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+    }
+
+    .stat-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .icon-attendance { background: rgba(16, 185, 129, 0.1); color: #10b981; }
+    .icon-assignments { background: rgba(245, 158, 11, 0.1); color: #f59e0b; }
+    .icon-marks { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
+
+    .progress {
+        height: 10px;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 10px;
+        margin-top: 1.5rem;
+    }
+
+    .progress-bar {
+        background: linear-gradient(90deg, #6366f1, #a855f7);
+        border-radius: 10px;
+    }
+
+    .section-title {
+        font-size: 1.75rem;
+        font-weight: 700;
+        margin-bottom: 2rem;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .section-title::after {
+        content: '';
+        flex-grow: 1;
+        height: 1px;
+        background: rgba(255, 255, 255, 0.05);
+    }
+
+    .quick-action-btn {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        padding: 1.5rem;
+        border-radius: 20px;
+        text-align: center;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        color: white;
+        display: block;
+    }
+
+    .quick-action-btn:hover {
+        background: #6366f1;
+        color: white;
+        transform: translateY(-5px);
+    }
+
+    .notification-item {
+        background: rgba(255, 255, 255, 0.02);
+        border-radius: 16px;
+        padding: 1.25rem;
+        margin-bottom: 1rem;
+        border-left: 4px solid #6366f1;
+        transition: all 0.3s ease;
+    }
+
+    .notification-item:hover {
+        background: rgba(255, 255, 255, 0.05);
+        transform: translateX(5px);
+    }
+
+    .data-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0 10px;
+    }
+
+    .data-table tr {
+        background: rgba(255, 255, 255, 0.02);
+        transition: all 0.3s ease;
+    }
+
+    .data-table tr:hover {
+        background: rgba(255, 255, 255, 0.05);
+    }
+
+    .data-table td, .data-table th {
+        padding: 1.25rem;
+        border: none;
+    }
+
+    .data-table th {
+        color: #64748b;
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.8rem;
+        letter-spacing: 1px;
+    }
+
+    .btn-custom {
+        padding: 0.8rem 2rem;
+        border-radius: 50px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .floating-stats {
+        position: absolute;
+        top: 2rem;
+        right: 3rem;
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        padding: 1rem 2rem;
+        border-radius: 50px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    @media (max-width: 768px) {
+        .welcome-card { padding: 3rem 1.5rem; }
+        .welcome-card h1 { font-size: 2.5rem; }
+        .floating-stats { display: none; }
+    }
+</style>
+
+<div class="container-fluid py-4 animate-fadeIn">
+    <!-- Hero Section -->
+    <div class="welcome-card mb-5">
+        <div class="row align-items-center">
+            <div class="col-lg-7">
+                <h6 class="text-uppercase tracking-wider opacity-75 mb-3 fw-bold">Academic Year 2026-27</h6>
+                <h1 class="display-4 fw-bold mb-4">Hello, {{ student.student_name }}!</h1>
+                <p class="lead mb-4 opacity-75" style="max-width: 600px;">Your academic journey continues here. Track your progress, collaborate with faculty, and stay ahead of your schedule.</p>
+                <div class="d-flex gap-3 flex-wrap">
+                    <a href="{% url 'Student:Viewnotes' %}" class="btn btn-light btn-custom text-primary shadow-lg">
+                        <i class="fas fa-book-open me-2"></i>My Courses
+                    </a>
+                    <a href="{% url 'Student:ViewTimeTable' %}" class="btn btn-outline-light btn-custom">
+                        <i class="fas fa-calendar-alt me-2"></i>View Schedule
+                    </a>
+                </div>
+            </div>
+            <div class="col-lg-5 text-center d-none d-lg-block">
+                 <div class="stat-card p-4 d-inline-block bg-white bg-opacity-10 border-white border-opacity-10">
+                    <i class="fas fa-user-graduate fa-8x opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Hub Grid -->
+    <div class="row g-4 mb-5">
+        <div class="col-md-3">
+            <a href="{% url 'Student:ViewTimeTable' %}" class="quick-action-btn">
+                <i class="fas fa-clock fa-2x mb-3 text-warning"></i>
+                <h5 class="mb-1">Timetable</h5>
+                <p class="smaller text-muted mb-0">Check today's hours</p>
+            </a>
+        </div>
+        <div class="col-md-3">
+            <a href="{% url 'Student:Viewassignment' %}" class="quick-action-btn">
+                <i class="fas fa-file-alt fa-2x mb-3 text-info"></i>
+                <h5 class="mb-1">Assignments</h5>
+                <p class="smaller text-muted mb-0">{{ submitted_assignments }} Submitted</p>
+            </a>
+        </div>
+        <div class="col-md-3">
+            <a href="{% url 'Student:viewattendance' %}" class="quick-action-btn">
+                <i class="fas fa-check-circle fa-2x mb-3 text-success"></i>
+                <h5 class="mb-1">Attendance</h5>
+                <p class="smaller text-muted mb-0">{{ attendance_percentage }}% Present</p>
+            </a>
+        </div>
+        <div class="col-md-3">
+            <a href="{% url 'Student:Complaint' %}" class="quick-action-btn">
+                <i class="fas fa-headset fa-2x mb-3 text-danger"></i>
+                <h5 class="mb-1">Support Hub</h5>
+                <p class="smaller text-muted mb-0">Help & Feedback</p>
+            </a>
+        </div>
+    </div>
+
+    <!-- Academic Progress Row -->
+    <h3 class="section-title">Academic Hub</h3>
+    <div class="row g-4 mb-5">
+        <div class="col-lg-8">
+            <div class="stat-card">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h4 class="mb-0 fw-bold">Internal Assessments</h4>
+                    <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 rounded-pill">Current Semester</span>
+                </div>
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Subject Detail</th>
+                                <th>Progress</th>
+                                <th>Score</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for m in internal_marks %}
+                            <tr>
+                                <td>
+                                    <div class="fw-bold">{{ m.subject.subject_name }}</div>
+                                    <span class="smaller text-muted">Internal Exam</span>
+                                </td>
+                                <td style="width: 200px;">
+                                    <div class="progress" style="height: 6px; margin-top: 0">
+                                        <div class="progress-bar" style="width: {{ m.internal_score }}%"></div>
+                                    </div>
+                                </td>
+                                <td class="fw-bold">{{ m.internal_score }}</td>
+                                <td><span class="text-success small fw-bold">Graded</span></td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="4" class="text-center py-5 text-muted">No marks recorded yet for this session.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="stat-card h-100">
+                <h4 class="mb-4 fw-bold">Campus Updates</h4>
+                {% for n in notifications %}
+                <div class="notification-item">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="badge bg-primary bg-opacity-10 text-primary smaller">Announcement</span>
+                        <span class="smaller text-muted">{{ n.notification_date }}</span>
+                    </div>
+                    <h6 class="fw-bold mb-1">{{ n.notification_title }}</h6>
+                    <p class="smaller text-muted mb-0">{{ n.notification_content|truncatewords:20 }}</p>
+                </div>
+                {% empty %}
+                <div class="text-center py-5">
+                    <i class="fas fa-bell-slash fa-3x opacity-25 mb-3"></i>
+                    <p class="text-muted small">No new announcements today.</p>
+                </div>
+                {% endfor %}
+                {% if notifications %}
+                <div class="text-center mt-3">
+                    <a href="{% url 'Student:Viewnotes' %}" class="btn btn-sm btn-link text-primary text-decoration-none">View All Notifications</a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Attendance Overview -->
+    <div class="row g-4 mb-5">
+        <div class="col-md-6">
+            <div class="stat-card">
+                <div class="d-flex align-items-center gap-4">
+                    <div class="stat-icon icon-attendance mb-0" style="width: 80px; height: 80px; font-size: 2rem;">
+                         {{ attendance_percentage|floatformat:0 }}%
+                    </div>
+                    <div>
+                        <h4 class="mb-1 fw-bold">Overall Attendance</h4>
+                        <p class="text-muted small mb-0">Total Hours Tracked: {{ total_attendance }}</p>
+                    </div>
+                </div>
+                <div class="progress" style="height: 12px;">
+                    <div class="progress-bar" style="width: {{ attendance_percentage }}%"></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="stat-card">
+                 <div class="d-flex align-items-center gap-4">
+                    <div class="stat-icon icon-assignments mb-0" style="width: 80px; height: 80px; font-size: 2rem;">
+                         <i class="fas fa-file-contract"></i>
+                    </div>
+                    <div>
+                        <h4 class="mb-1 fw-bold">Assignment Score</h4>
+                        <p class="text-muted small mb-0">Submitted: {{ submitted_assignments }} / {{ total_assignments }}</p>
+                    </div>
+                </div>
+                <div class="progress" style="height: 12px;">
+                    <div class="progress-bar bg-warning" style="width: {{ assignment_percentage }}%"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

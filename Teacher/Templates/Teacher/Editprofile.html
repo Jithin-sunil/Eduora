@@ -1,0 +1,86 @@
+{% extends 'Teacher/Head.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row pt-5 justify-content-center">
+        <div class="col-lg-5">
+            <!-- Form Card -->
+            <div class="card bg-white bg-opacity-5 border border-white border-opacity-10 rounded-4 shadow-lg overflow-hidden animate-fadeIn">
+                <div class="card-body p-5">
+                    <div class="text-center mb-5">
+                        <div class="position-relative d-inline-block">
+                            <div class="rounded-circle border border-4 border-primary d-inline-block overflow-hidden shadow-lg" style="width: 120px; height: 120px; background: #1e293b;">
+                                <img id="previewPhoto" src="{{ teacher.teacher_photo.url }}" class="w-100 h-100 object-fit-cover shadow-sm" alt="Preview">
+                            </div>
+                            <label for="file_photo" class="btn btn-sm btn-primary border-0 rounded-circle position-absolute bottom-0 end-0 p-2 shadow" style="width: 35px; height: 35px;">
+                                <i class="fas fa-camera smaller"></i>
+                            </label>
+                            <input type="file" name="file_photo" id="file_photo" class="d-none" onchange="previewImage(event)">
+                        </div>
+                        <h2 class="h3 fw-bold mt-4 mb-2">Update Credentials</h2>
+                        <p class="text-muted small">Synchronize your personal profile with institutional records</p>
+                    </div>
+
+                    <form action="" method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="mb-4">
+                            <label class="form-label text-muted small fw-bold uppercase letter-spacing-1">Full Legal Name</label>
+                            <input type="text" name="txt_name" value="{{ teacher.teacher_name }}" class="form-control bg-dark border-secondary text-white py-2 shadow-sm" required pattern="^[A-Z]+[a-zA-Z ]*$" title="Start with Capital">
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label text-muted small fw-bold uppercase letter-spacing-1">Institutional Email</label>
+                            <input type="email" name="txt_email" value="{{ teacher.teacher_email }}" class="form-control bg-dark border-secondary text-white py-2 shadow-sm" required>
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label text-muted small fw-bold uppercase letter-spacing-1">Primary Contact</label>
+                            <input type="text" name="txt_contact" id="txt_contact" value="{{ teacher.teacher_contact }}" class="form-control bg-dark border-secondary text-white py-2 shadow-sm" required pattern="[6-9]{1}[0-9]{9}" onkeyup="validatePhone()">
+                            <div id="phoneMsg" class="smaller mt-2 opacity-75"></div>
+                        </div>
+
+                        <div class="d-grid mt-5 shadow-lg">
+                            <button type="submit" class="btn btn-primary py-3 rounded-pill fw-bold transform-active transition-all">
+                                <i class="fas fa-save me-2"></i>Persist Changes
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                
+                <div class="bg-white bg-opacity-5 py-4 border-top border-white border-opacity-10 text-center">
+                    <a href="{% url 'Teacher:Myprofile' %}" class="text-muted small text-decoration-none hover-underline"><i class="fas fa-arrow-left me-1"></i> Abort and Return</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function previewImage(event){
+    var reader = new FileReader();
+    reader.onload = function(){
+        var output = document.getElementById('previewPhoto');
+        output.src = reader.result;
+    }
+    reader.readAsDataURL(event.target.files[0]);
+}
+
+function validatePhone(){
+    var phone = document.getElementById("txt_contact").value;
+    var msg = document.getElementById("phoneMsg");
+    var pattern = /^[6-9][0-9]{9}$/;
+    if(pattern.test(phone)){
+        msg.innerHTML = "Valid Phone Number <i class='fas fa-check-circle text-success'></i>";
+        msg.style.color = "transparent";
+    }else{
+        msg.innerHTML = "Invalid Phone Number <i class='fas fa-times-circle text-danger'></i>";
+        msg.style.color = "transparent";
+    }
+}
+</script>
+
+{% if msg %}
+<script>
+    alert("{{msg}}");
+</script>
+{% endif %}
+{% endblock %}

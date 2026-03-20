@@ -1,0 +1,195 @@
+{% extends 'Teacher/Head.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+    .teacher-welcome {
+        background: linear-gradient(135deg, #4f46e5, #0ea5e9);
+        border-radius: 20px;
+        padding: 2.5rem;
+        margin-bottom: 2rem;
+        color: white;
+    }
+
+    .stat-box {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 16px;
+        padding: 1.5rem;
+        transition: transform 0.3s ease;
+        height: 100%;
+    }
+
+    .stat-box:hover {
+        transform: translateY(-5px);
+        border-color: #6366f1;
+    }
+
+    .stat-icon {
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+        opacity: 0.8;
+    }
+
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 0.2rem;
+    }
+
+    .stat-label {
+        color: #94a3b8;
+        font-size: 0.875rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .list-card {
+        background: rgba(255, 255, 255, 0.03);
+        border-radius: 16px;
+        padding: 1.5rem;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .student-row {
+        padding: 1rem;
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.02);
+        margin-bottom: 0.75rem;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        transition: background 0.3s ease;
+    }
+
+    .student-row:hover {
+        background: rgba(255, 255, 255, 0.05);
+    }
+
+    .student-avatar {
+        width: 45px;
+        height: 45px;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+
+    .progress-minimal {
+        height: 6px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 3px;
+        width: 100px;
+    }
+
+    .section-title {
+        font-weight: 600;
+        margin-bottom: 1.5rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+</style>
+
+<div class="teacher-welcome animate-fadeIn">
+    <div class="row align-items-center">
+        <div class="col-md-8">
+            <h1 class="fw-bold mb-2">Welcome Back, {{ teacher.teacher_name }}</h1>
+            <p class="mb-0 opacity-80">You have management over your classes and student assessments. Check the latest submissions below.</p>
+        </div>
+        <div class="col-md-4 text-end d-none d-md-block">
+            <i class="fas fa-chalkboard-teacher fa-5x opacity-20"></i>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-md-3">
+        <div class="stat-box">
+            <div class="stat-icon text-primary"><i class="fas fa-users"></i></div>
+            <div class="stat-value">{{ student_count }}</div>
+            <div class="stat-label">Total Students</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-box">
+            <div class="stat-icon text-success"><i class="fas fa-file-alt"></i></div>
+            <div class="stat-value">{{ assignment_count }}</div>
+            <div class="stat-label">Assignments</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-box">
+            <div class="stat-icon text-warning"><i class="fas fa-clock"></i></div>
+            <div class="stat-value">{{ assignment_submission_count }}</div>
+            <div class="stat-label">Submissions</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-box">
+            <div class="stat-icon text-danger"><i class="fas fa-calendar-times"></i></div>
+            <div class="stat-value">{{ leave_count }}</div>
+            <div class="stat-label">Pending Leaves</div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-6">
+        <div class="list-card h-100">
+            <div class="section-title">
+                <h5 class="mb-0">Class Performance (Attendance)</h5>
+            </div>
+            {% for s in data %}
+            <div class="student-row">
+                <img src="{{ s.student.student_photo.url }}" class="student-avatar" alt="">
+                <div class="flex-grow-1">
+                    <div class="fw-semibold">{{ s.student.student_name }}</div>
+                    <div class="small text-muted">Register No: {{ s.student.student_registernumber }}</div>
+                </div>
+                <div class="text-end">
+                    <div class="small fw-bold">{{ s.percentage }}%</div>
+                    <div class="progress progress-minimal">
+                        <div class="progress-bar bg-success" style="--w: {{ s.percentage }}; width: calc(var(--w) * 1%);"></div>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <p class="text-center text-muted">No students assigned to your class yet.</p>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="list-card mb-4">
+            <div class="section-title">
+                <h5 class="mb-0">Upcoming Deadlines</h5>
+            </div>
+            {% for a in assign %}
+            <div class="notification-item mb-3 p-3 bg-white bg-opacity-5 rounded-3 border-start border-primary border-4">
+                <div class="fw-semibold text-primary">{{ a.subject.subject_name }}</div>
+                <div class="small">{{ a.assignment_title }}</div>
+                <div class="smaller text-muted mt-1"><i class="fas fa-calendar-day me-1"></i> Due: {{ a.assignment_duedate }}</div>
+            </div>
+            {% empty %}
+            <p class="text-center text-muted">No active assignments to show.</p>
+            {% endfor %}
+            <a href="{% url 'Teacher:Assignment' %}" class="btn btn-outline-primary w-100 mt-3 btn-sm">Manage Assignments</a>
+        </div>
+
+        <div class="list-card">
+            <div class="section-title">
+                <h5 class="mb-0 text-warning"><i class="fas fa-bullhorn me-2"></i>College Announcements</h5>
+            </div>
+            {% for n in notifications %}
+            <div class="p-3 bg-white bg-opacity-5 rounded-3 mb-2 border-start border-warning border-4">
+                <div class="fw-semibold small">{{ n.notification_title }}</div>
+                <div class="smaller text-muted">{{ n.notification_content|truncatewords:10 }}</div>
+                <div class="smaller opacity-50 mt-1">{{ n.notification_date }}</div>
+            </div>
+            {% empty %}
+            <p class="text-center text-muted py-3 small">Stay tuned for campus news.</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}
