@@ -94,7 +94,7 @@
                                         </td>
                                         <td class="px-4 py-3">
                                             <span class="badge bg-danger bg-opacity-10 text-danger px-3 py-2 rounded-pill">
-                                                <i class="fas fa-clock me-1"></i> {{ i.assignment_duedate }}
+                                                <i class="fas fa-clock me-1"></i> {{ i.assignment_duedate|date:"d/m/Y" }}
                                             </span>
                                         </td>
                                         <td class="px-4 py-3 text-end">
@@ -145,6 +145,15 @@ $("#sel_semester").change(function(){
 {% if msg %}
 <script>
     alert("{{msg}}");
+    window.location = "{% url 'Teacher:Assignment' %}";
 </script>
 {% endif %}
+
+<script>
+    // Set min date for assignment due date to today
+    const dueDateInput = document.querySelector('input[name="txt_date"]');
+    const today = new Date().toISOString().split('T')[0];
+    dueDateInput.setAttribute('min', today);
+</script>
+
 {% endblock %}

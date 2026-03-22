@@ -70,10 +70,8 @@ function validatePhone(){
     var pattern = /^[6-9][0-9]{9}$/;
     if(pattern.test(phone)){
         msg.innerHTML = "Valid Phone Number <i class='fas fa-check-circle text-success'></i>";
-        msg.style.color = "transparent";
     }else{
         msg.innerHTML = "Invalid Phone Number <i class='fas fa-times-circle text-danger'></i>";
-        msg.style.color = "transparent";
     }
 }
 </script>

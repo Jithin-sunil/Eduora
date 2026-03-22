@@ -52,7 +52,7 @@
             <!-- Configuration Card -->
             <div class="card bg-white bg-opacity-5 border border-white border-opacity-10 rounded-4 shadow-sm mb-5 animate-slideIn">
                 <div class="card-body p-4">
-                    <form method="get">
+                    <form method="get" id="attendanceForm">
                         <div class="row g-3 align-items-end">
                             <div class="col-md-3">
                                 <label class="form-label text-muted small fw-bold uppercase">Academic Info</label>
@@ -63,7 +63,7 @@
                                     {% endfor %}
                                 </select>
                             </div>
-                            <div class="col-md-3">
+                            <div class="col-md-2">
                                 <select required name="course" id="sel_course" class="form-select bg-dark border-secondary text-white py-2">
                                     <option value="">-- Course --</option>
                                     {% for c in courses %}
@@ -80,8 +80,12 @@
                                 </select>
                             </div>
                             <div class="col-md-2">
+                                <label class="form-label text-muted small fw-bold uppercase">Date</label>
+                                <input type="date" required name="date" id="att_date" class="form-control bg-dark border-secondary text-white py-2" value="{{ selected_date }}" max="{{ today_date }}">
+                            </div>
+                            <div class="col-md-1">
                                 <select required name="hour" class="form-select bg-dark border-secondary text-white py-2">
-                                    <option value="">-- Hour --</option>
+                                    <option value="">-- Hr --</option>
                                     {% for h in hours %}
                                     <option value="{{ h.0 }}" {% if h.0 == selected_hour %}selected{% endif %}>{{ h.1 }}</option>
                                     {% endfor %}
@@ -89,7 +93,7 @@
                             </div>
                              <div class="col-md-2">
                                 <button type="submit" class="btn btn-primary w-100 py-2 rounded-3 shadow-sm">
-                                    <i class="fas fa-search me-2"></i>Fetch Class
+                                    <i class="fas fa-search me-2"></i>Fetch
                                 </button>
                             </div>
                         </div>
@@ -99,10 +103,10 @@
 
             {% if selected_students %}
             <!-- Marking Interface -->
-            <div class="card bg-white bg-opacity-5 border border-white border-opacity-10 rounded-4 shadow-sm overflow-hidden animate-fadeIn">
+            <div id="attendanceGrid" class="card bg-white bg-opacity-5 border border-white border-opacity-10 rounded-4 shadow-sm overflow-hidden animate-fadeIn">
                  <div class="card-header bg-white bg-opacity-5 py-3 px-4 border-0 d-flex justify-content-between align-items-center">
                     <h5 class="mb-0 fw-bold small text-muted uppercase letter-spacing-1">Subject: {{ selected_students.0.subject.subject_name }}</h5>
-                    <div class="badge bg-primary px-3 py-2 rounded-pill fw-bold">{{ selected_day }} - Hour {{ selected_hour }}</div>
+                    <div class="badge bg-primary px-3 py-2 rounded-pill fw-bold">{{ selected_date }} - Hour {{ selected_hour }}</div>
                  </div>
                 <div class="table-responsive">
                     <form method="post" action="{% url 'Teacher:save_attendance_selection' %}">
@@ -144,10 +148,11 @@
                         
                         <div class="p-4 bg-white bg-opacity-5 text-end">
                             <input type="hidden" name="hour" value="{{ selected_hour }}">
-                            <input type="hidden" name="day" value="{{ selected_day }}">
+                            <input type="hidden" name="date" value="{{ selected_date }}">
                             <input type="hidden" name="course" value="{{ selected_course }}">
                             <input type="hidden" name="semester" value="{{ selected_semester }}">
-                            <button type="submit" class="btn btn-success px-5 py-2 rounded-pill shadow-sm fw-bold">
+                            <input type="hidden" name="department" value="{{ selected_department }}">
+                            <button type="submit" id="btnSubmit" class="btn btn-success px-5 py-2 rounded-pill shadow-sm fw-bold">
                                 <i class="fas fa-cloud-upload-alt me-2"></i>Apply Attendance Log
                             </button>
                         </div>
@@ -155,19 +160,53 @@
                 </div>
             </div>
             {% endif %}
+            
+            <div id="holidayMsg" class="alert alert-info bg-info bg-opacity-10 border-info border-opacity-20 text-info p-4 rounded-4 shadow-sm d-none">
+                <div class="d-flex align-items-center gap-3">
+                    <i class="fas fa-umbrella-beach fa-2x"></i>
+                    <div>
+                        <h5 class="mb-1 fw-bold">Weekend - Institutional Holiday</h5>
+                        <p class="mb-0 opacity-75">Attendance cannot be marked on Saturdays and Sundays. Please select a valid working day.</p>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
-$("#sel_department").change(function(){
-    $.ajax({
-        url: "{% url 'Admin:Ajaxcourse' %}",
-        data: {disid: $(this).val()},
-        success: function(data){
-            $("#sel_course").html(data);
+$(document).ready(function() {
+    function checkWeekend() {
+        var dateVal = $("#att_date").val();
+        if (dateVal) {
+            var date = new Date(dateVal);
+            var day = date.getUTCDay(); // 0 is Sunday, 6 is Saturday
+            if (day === 0 || day === 6) {
+                $("#holidayMsg").removeClass("d-none");
+                $("#attendanceGrid").addClass("d-none");
+            } else {
+                $("#holidayMsg").addClass("d-none");
+                $("#attendanceGrid").removeClass("d-none");
+            }
         }
+    }
+
+    $("#att_date").change(function() {
+        checkWeekend();
+    });
+
+    // Initial check on load
+    checkWeekend();
+
+    $("#sel_department").change(function() {
+        $.ajax({
+            url: "{% url 'Admin:Ajaxcourse' %}",
+            data: { disid: $(this).val() },
+            success: function(data) {
+                $("#sel_course").html(data);
+            }
+        });
     });
 });
 </script>

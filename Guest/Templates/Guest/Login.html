@@ -156,7 +156,7 @@
                     <input type="password" name="txt_password" placeholder="••••••••" required>
                 </div>
                 <div class="text-end mt-1">
-                    <a href="{% url 'Guest:forgot_password' %}"
+                    <a href="{% url 'Guest:forgotpassword' %}"
                         style="color: rgba(99,102,241,0.8); font-size:0.82rem; text-decoration:none;">
                         <i class="fas fa-question-circle me-1"></i>Forgot Password?
                     </a>
@@ -175,6 +175,7 @@
 {% if msg %}
 <script>
     alert("{{msg}}");
+    window.location.href = "{% url 'Guest:Login' %}";
 </script>
 {% endif %}
 {% endblock %}

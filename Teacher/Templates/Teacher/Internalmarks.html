@@ -25,13 +25,21 @@
                             <form action="" method="post">
                                 {% csrf_token %}
                                 <div class="mb-4">
-                                    <label class="form-label text-muted small fw-bold uppercase">Academic Semester</label>
-                                    <select name="sel_semester" id="sel_semester" class="form-select bg-dark border-secondary text-white py-2" required>
-                                        <option value="">-- Choose Semester --</option>
-                                        {% for i in semesterdata %}
-                                        <option value="{{i.id}}">{{i.semester_name}}</option>
-                                        {% endfor %}
-                                    </select>
+                                    <label class="form-label text-muted small fw-bold uppercase">Current Academic Semester</label>
+                                    {% if current_sem %}
+                                        <div class="form-control bg-dark border-primary border-opacity-25 text-white py-2 d-flex justify-content-between align-items-center">
+                                            <span>{{ current_sem.semester_name }}</span>
+                                            <span class="badge bg-primary bg-opacity-20 text-primary smaller">Active</span>
+                                        </div>
+                                        <input type="hidden" name="sel_semester" id="sel_semester" value="{{ current_sem.id }}">
+                                    {% else %}
+                                        <select name="sel_semester" id="sel_semester" class="form-select bg-dark border-secondary text-white py-2" required>
+                                            <option value="">-- Choose Semester --</option>
+                                            {% for i in semesterdata %}
+                                            <option value="{{i.id}}">{{i.semester_name}}</option>
+                                            {% endfor %}
+                                        </select>
+                                    {% endif %}
                                 </div>
                                 <div class="mb-4">
                                     <label class="form-label text-muted small fw-bold uppercase">Subject Module</label>
@@ -99,8 +107,8 @@
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 <script>
-$("#sel_semester").change(function(){
-    var semid = $(this).val();
+function loadSubjects(semid) {
+    if(!semid) return;
     var ur = "{% url 'Student:AjaxSubject' %}";
     $.ajax({
         url: ur,
@@ -109,6 +117,17 @@ $("#sel_semester").change(function(){
             $("#sel_subject").html(data);
         },
     });
+}
+
+$(document).ready(function(){
+    var semid = $("#sel_semester").val();
+    if(semid) {
+        loadSubjects(semid);
+    }
+});
+
+$("#sel_semester").change(function(){
+    loadSubjects($(this).val());
 });
 </script>
 

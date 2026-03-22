@@ -65,6 +65,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'Teacher.context_processors.teacher_sidebar_context',
             ],
         },
     },
@@ -132,6 +133,6 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = ""
-EMAIL_HOST_PASSWORD = 'your_app_password_here'    
-DEFAULT_FROM_EMAIL = 'EduSphere College Portal <your_email@gmail.com>'
+EMAIL_HOST_USER = "eduora231@gmail.com"
+EMAIL_HOST_PASSWORD = 'cbhx ixon caeu juza'    
+DEFAULT_FROM_EMAIL = 'EduSphere College Portal <eduora231@gmail.com>'

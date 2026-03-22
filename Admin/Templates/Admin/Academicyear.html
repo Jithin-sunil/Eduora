@@ -74,6 +74,7 @@
 {% if msg %}
 <script>
     alert("{{msg}}");
+    window.location = "{% url 'Admin:Academicyear' %}";
 </script>
 {% endif %}
 {% endblock %}

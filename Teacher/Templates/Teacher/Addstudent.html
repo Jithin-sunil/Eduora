@@ -125,7 +125,7 @@
                                 </td>
                                 <td class="px-4 py-3">
                                     <div class="small mb-1">{{ i.student_gender }}</div>
-                                    <div class="smaller text-muted opacity-50"><i class="fas fa-birthday-cake me-1"></i> {{ i.student_dob }}</div>
+                                    <div class="smaller text-muted opacity-50"><i class="fas fa-birthday-cake me-1"></i> {{ i.student_dob|date:"d/m/Y" }}</div>
                                 </td>
                                 <td class="px-4 py-3 text-end">
                                     <a href="{% url 'Teacher:delstudent' i.id %}" class="btn btn-sm btn-outline-danger border-0 rounded-circle" onclick="return confirm('Delete this student?')">
@@ -133,6 +133,7 @@
                                     </a>
                                 </td>
                             </tr>
+                          
                             {% empty %}
                             <tr>
                                 <td colspan="4" class="text-center py-5 text-muted">
@@ -155,4 +156,16 @@
     alert("{{msg}}");
 </script>
 {% endif %}
+
+<script>
+    // Set DOB validation
+    const dobInput = document.getElementById('txt_date');
+    const today = new Date();
+    const maxDate = new Date(today.getFullYear() - 17, today.getMonth(), today.getDate()).toISOString().split('T')[0];  // 17 years ago
+    const minDate = new Date(today.getFullYear() - 100, today.getMonth(), today.getDate()).toISOString().split('T')[0];  // 100 years ago
+    dobInput.setAttribute('max', maxDate);
+    dobInput.setAttribute('min', minDate);
+    dobInput.setAttribute('value', maxDate);  // Set default to 17 years ago
+</script>
+
 {% endblock %}

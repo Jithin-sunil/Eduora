@@ -27,6 +27,7 @@
                                 <th class="px-4 py-3 border-0 small text-muted uppercase">Semester Module</th>
                                 <th class="px-4 py-3 border-0 small text-muted uppercase">Subject Specialization</th>
                                 <th class="px-4 py-3 border-0 small text-muted uppercase text-end">Institutional Status</th>
+                                <th class="px-4 py-3 border-0 small text-muted uppercase text-end">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -46,10 +47,15 @@
                                         <span class="live-status me-2" style="width: 6px; height: 6px;"></span> Active
                                     </div>
                                 </td>
+                                <td class="px-4 py-3 text-end">
+                                    <a href="{% url 'Teacher:view_students_for_subject' i.subject.id %}" class="btn btn-primary btn-sm rounded-pill">
+                                        <i class="fas fa-users me-2"></i>View Students
+                                    </a>
+                                </td>
                             </tr>
                             {% empty %}
                             <tr>
-                                <td colspan="4" class="text-center py-5 text-muted opacity-50">
+                                <td colspan="5" class="text-center py-5 text-muted opacity-50">
                                     <i class="fas fa-book-open fa-3x mb-3 d-block opacity-20"></i>
                                     No subjects currently assigned for this session.
                                 </td>

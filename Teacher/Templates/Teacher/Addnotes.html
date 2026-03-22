@@ -137,6 +137,7 @@ $("#sel_semester").change(function(){
 {% if msg %}
 <script>
     alert("{{msg}}");
+    window.location = "{% url 'Teacher:Addnotes' %}";
 </script>
 {% endif %}
 {% endblock %}

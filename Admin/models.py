@@ -1,4 +1,10 @@
 from django.db import models
+from django.core.exceptions import ValidationError
+from django.utils import timezone
+
+def validate_future_date(value):
+    if value < timezone.now().date():
+        raise ValidationError('Date cannot be in the past.')
 
 # Create your models here.
 class tbl_admin(models.Model):
@@ -75,7 +81,7 @@ class tbl_notification(models.Model):
     notification_date = models.DateField(auto_now_add=True)
 
 class tbl_specialtimetable(models.Model):
-    date = models.DateField()
+    date = models.DateField(validators=[validate_future_date])
     hour = models.CharField(max_length=5)
     subject = models.ForeignKey(tbl_subject,on_delete=models.CASCADE)
     teacher = models.ForeignKey(tbl_teacher,on_delete=models.CASCADE)

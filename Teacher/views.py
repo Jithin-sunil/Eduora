@@ -8,11 +8,27 @@ from django.conf import settings
 
 # Create your views here.
 def Homepage(request):
-    sc=tbl_student.objects.filter(assignclass__teacher=request.session['tid']).count()
-    ac=tbl_assignment.objects.filter(teacher=request.session['tid']).count()
-    lc=tbl_leave.objects.filter(student__assignclass__teacher=request.session['tid'],leave_status=0).count()
-    asup=tbl_assignmentbody.objects.filter(assignment__teacher=request.session['tid']).count()
-    std=tbl_student.objects.filter(assignclass__teacher=request.session['tid'])
+    teacher = tbl_teacher.objects.get(id=request.session['tid'])
+    
+    # Existing counts
+    sc = tbl_student.objects.filter(assignclass__teacher=teacher).count()
+    ac = tbl_assignment.objects.filter(teacher=teacher).count()
+    
+    # Detailed counts for teacher attention
+    # 1. Leave applications (pending)
+    lc = tbl_leave.objects.filter(student__assignclass__teacher=teacher, leave_status=0).count()
+    
+    # 2. Duty leaves applied and verified (status=1)
+    verified_duty_leaves = tbl_dutyleave.objects.filter(student__assignclass__teacher=teacher, dutyleave_status=1).count()
+    pending_duty_leaves = tbl_dutyleave.objects.filter(student__assignclass__teacher=teacher, dutyleave_status=0).count()
+    
+    # 3. Assignments uploaded (total submissions for teacher's assignments)
+    asup = tbl_assignmentbody.objects.filter(assignment__teacher=teacher).count()
+    
+    # 4. Pending Assignment evaluation
+    pending_evals = tbl_assignmentbody.objects.filter(assignment__teacher=teacher, ass_status=0).count()
+
+    std = tbl_student.objects.filter(assignclass__teacher=teacher)
     data = []
 
     for i in std:
@@ -28,17 +44,34 @@ def Homepage(request):
             'student': i,
             'percentage': round(percentage, 2)
         })
-    teacher = tbl_teacher.objects.get(id=request.session['tid'])
-    assign=tbl_assignment.objects.filter(teacher=teacher).order_by('-id')[:5]
+    
+    assign = tbl_assignment.objects.filter(teacher=teacher).order_by('-id')[:5]
     notifications = tbl_notification.objects.all().order_by('-id')[:5]
-    return render(request,"Teacher/Homepage.html",{'student_count':sc,'assignment_count':ac,'leave_count':lc,'assignment_submission_count':asup,'data':data,'teacher':teacher,'assign':assign, 'notifications': notifications})
+    
+    is_class_teacher = tbl_assignclass.objects.filter(teacher=teacher).exists()
+    
+    return render(request, "Teacher/Homepage.html", {
+        'student_count': sc,
+        'assignment_count': ac,
+        'leave_count': lc,
+        'verified_duty_leaves': verified_duty_leaves,
+        'pending_duty_leaves': pending_duty_leaves,
+        'assignment_submission_count': asup,
+        'pending_evaluations': pending_evals,
+        'data': data,
+        'teacher': teacher,
+        'is_class_teacher': is_class_teacher,
+        'assign': assign,
+        'notifications': notifications
+    })
 
 
 def Myprofile(request):
   teacherdata = tbl_teacher.objects.get(id=request.session['tid'])
   assignclass = tbl_assignclass.objects.filter(teacher=teacherdata).first()
   incharge = tbl_incharge.objects.filter(teacher=teacherdata)
-  return render(request,"Teacher/Myprofile.html",{'teacher':teacherdata, 'assignclass': assignclass, 'incharge': incharge})
+  is_class_teacher = assignclass is not None
+  return render(request,"Teacher/Myprofile.html",{'teacher':teacherdata, 'assignclass': assignclass, 'incharge': incharge, 'is_class_teacher': is_class_teacher})
 
 def Editprofile(request):
   teacherdata = tbl_teacher.objects.get(id=request.session['tid'])
@@ -92,13 +125,18 @@ def Addstudent(request):
         regno = request.POST.get("txt_number")
         dob=request.POST.get("txt_date")
         password=request.POST.get("txt_password")
+        studentcount = tbl_student.objects.filter(student_registernumber__iexact=regno).count()
+        if studentcount > 0:
+            return render(request,"Teacher/Addstudent.html",{'msg':"Student Already Exists...",'is_class_teacher': is_ct})
+
+        else:
         
-        tbl_student.objects.create(
-            student_name=name, student_email=email, student_contact=contact, 
-            student_address=address, student_photo=photo, student_gender=gender, 
-            student_dob=dob, student_password=password, assignclass=assignclid, 
-            student_registernumber=regno
-        )
+            tbl_student.objects.create(
+                student_name=name, student_email=email, student_contact=contact, 
+                student_address=address, student_photo=photo, student_gender=gender, 
+                student_dob=dob, student_password=password, assignclass=assignclid, 
+                student_registernumber=regno
+            )
         # Send welcome email with login credentials
         try:
             send_mail(
@@ -210,24 +248,73 @@ def Viewstudents(request):
   semesterdata = tbl_semester.objects.all()
   coursedata = tbl_course.objects.filter(id=assignclid.Class.course.id)
   
+  student_list = tbl_student.objects.filter(assignclass=assignclid)
+
   if request.method == "POST":
-    semester = request.POST.get("sel_semester")
-    studentdata = tbl_student.objects.filter(assignclass=assignclid)
-    return render(request, "Teacher/Viewstudents.html", {'semesterdata': semesterdata, 'coursedata': coursedata, 'studentdata': studentdata, 'is_class_teacher': True})
-  else:
-    studentdata = tbl_student.objects.filter(assignclass=assignclid)
-    return render(request, "Teacher/Viewstudents.html", {'semesterdata': semesterdata, 'coursedata': coursedata, 'studentdata': studentdata, 'is_class_teacher': True})
+      selected_semester = request.POST.get("sel_semester")
+      if selected_semester:
+          # Assuming student model has a way to filter by semester or we just filter the list
+          # If students are strictly in classes, filter by class's semester if applicable.
+          # Here we keep it simple since we already have the class teacher's students.
+          pass
+
+  studentdata = []
+  for student in student_list:
+      total = tbl_attendance.objects.filter(student=student).count()
+      present = tbl_attendance.objects.filter(student=student, status=1).count()
+      percentage = (present / total * 100) if total > 0 else 0
+      
+      studentdata.append({
+          'student': student,
+          'percentage': round(percentage, 2)
+      })
+
+  return render(request, "Teacher/Viewstudents.html", {
+      'semesterdata': semesterdata, 
+      'coursedata': coursedata, 
+      'studentdata': studentdata, 
+      'is_class_teacher': True
+  })
   
-def Addinternalmark(request,aid):
-   semesterdata=tbl_semester.objects.all()
-   internaldata=tbl_internalmark.objects.filter(student=aid)
-   if request.method == "POST":
-    score=request.POST.get("txt_internal")   
-    subject = tbl_subject.objects.get(id=request.POST.get("sel_subject"))
-    tbl_internalmark.objects.create(internal_score=score,subject=subject,student=tbl_student.objects.get(id=aid))
-    return render(request,"Teacher/Internalmarks.html",{'msg':"Internal Marks added...",'aid':aid})
-   else:
-    return render(request,"Teacher/Internalmarks.html",{'semesterdata':semesterdata,'internaldata':internaldata})
+def Addinternalmark(request, aid):
+    student = tbl_student.objects.get(id=aid)
+    # Get student's CURRENT semester based on class mapping
+    current_classsem = tbl_classsem.objects.filter(assignclass=student.assignclass).last()
+    current_sem = current_classsem.semester if current_classsem else None
+    
+    internaldata = tbl_internalmark.objects.filter(student=student)
+    
+    if request.method == "POST":
+        score = request.POST.get("txt_internal")   
+        subject_id = request.POST.get("sel_subject")
+        subject = tbl_subject.objects.get(id=subject_id)
+        
+        # Validation: Verify the subject belongs to the current semester
+        if current_sem and subject.semester != current_sem:
+            return render(request, "Teacher/Internalmarks.html", {
+                'msg': "Access Denied: You can only add marks for the student's CURRENT semester.", 
+                'current_sem': current_sem, 
+                'internaldata': internaldata,
+                'aid': aid
+            })
+            
+        tbl_internalmark.objects.create(
+            internal_score=score,
+            subject=subject,
+            student=student
+        )
+        return render(request, "Teacher/Internalmarks.html", {
+            'msg': "Internal Marks added successfully", 
+            'current_sem': current_sem, 
+            'internaldata': internaldata,
+            'aid': aid
+        })
+    else:
+        return render(request, "Teacher/Internalmarks.html", {
+            'current_sem': current_sem, 
+            'internaldata': internaldata,
+            'aid': aid
+        })
 
 
    
@@ -268,6 +355,7 @@ def ViewTimeTable(request):
 def student_attendance(request):
     teacher = tbl_teacher.objects.get(id=request.session["tid"])
     academicyear = tbl_academicyear.objects.order_by('-id').first()
+    is_class_teacher = tbl_assignclass.objects.filter(teacher=teacher).exists()
 
     departments = tbl_department.objects.all()
     semesters = tbl_semester.objects.all()
@@ -279,14 +367,18 @@ def student_attendance(request):
     selected_course = request.GET.get("course")
     selected_semester = request.GET.get("semester")
     selected_hour = request.GET.get("hour")
-    selected_day = request.GET.get("day")
+    selected_date = request.GET.get("date")
 
     # Filter courses by department
     if selected_department:
         courses = tbl_course.objects.filter(department_id=selected_department)
 
     # Load students only if all required selections exist
-    if all([selected_course, selected_semester, selected_hour, selected_day]):
+    if all([selected_course, selected_semester, selected_hour, selected_date]):
+        
+        # Convert date to day of week
+        dt_obj = timezone.datetime.strptime(selected_date, '%Y-%m-%d').date()
+        selected_day = dt_obj.strftime('%A')
 
         timetable_entries = tbl_timetable.objects.filter(
             teacher_id=teacher,
@@ -297,12 +389,24 @@ def student_attendance(request):
             academicyear=academicyear
         )
 
+        # Real-time College Rule: If no regular class, check for Special Class (Substitute/Extra)
+        if not timetable_entries.exists():
+             timetable_entries = tbl_specialtimetable.objects.filter(
+                teacher=teacher,
+                course_id=selected_course,
+                semester_id=selected_semester,
+                hour=selected_hour,
+                date=selected_date,
+                academicyear=academicyear
+            )
+
         for tt in timetable_entries:
             students = tbl_student.objects.filter(
                 assignclass__Class__course=tt.course
             )
 
             for student in students:
+                # Get existing attendance record if any
                 attendance = tbl_attendance.objects.filter(
                     student=student,
                     subject=tt.subject,
@@ -310,18 +414,38 @@ def student_attendance(request):
                     course=tt.course,
                     semester=tt.semester,
                     academicyear=academicyear,
-                    date=timezone.now().date(),
+                    date=selected_date,
                     hour=selected_hour
                 ).first()
+
+                # Check if student is on approved Duty Leave for this date
+                on_duty = tbl_dutyleave.objects.filter(
+                    student=student,
+                    dutyleave_fromdate__lte=selected_date,
+                    dutyleave_todate__gte=selected_date,
+                    dutyleave_status=1
+                ).first()
+                
+                # Logic: If already marked, use that status. 
+                # If not marked but on duty, default to 'Present'. 
+                # Else default to 'Not Marked' (-1).
+                final_status = -1
+                if attendance:
+                    final_status = attendance.status
+                elif on_duty:
+                    final_status = 1  # Standard Practice: On-duty students are marked present
 
                 selected_students.append({
                     "student": student,
                     "subject": tt.subject,
-                    "attendance": attendance.status if attendance else 0
+                    "attendance": final_status,
+                    "on_duty": on_duty is not None,
+                    "duty_reason": on_duty.dutyleave_reason if on_duty else ""
                 })
 
     return render(request, "Teacher/MarkAttendance.html", {
         "teacher": teacher,
+        "is_class_teacher": is_class_teacher,
         "departments": departments,
         "courses": courses,
         "semesters": semesters,
@@ -333,7 +457,8 @@ def student_attendance(request):
         "selected_course": selected_course,
         "selected_semester": selected_semester,
         "selected_hour": selected_hour,
-        "selected_day": selected_day,
+        "selected_date": selected_date,
+        "today_date": timezone.now().date().strftime('%Y-%m-%d')
     })
 
 
@@ -344,10 +469,12 @@ def save_attendance_selection(request):
         academicyear = tbl_academicyear.objects.order_by('-id').first()
 
         hour = request.POST.get("hour")
-        day = request.POST.get("day")
+        date = request.POST.get("date")
         course_id = request.POST.get("course")
         semester_id = request.POST.get("semester")
-        today = timezone.now().date()
+        
+        dt_obj = timezone.datetime.strptime(date, '%Y-%m-%d').date()
+        day = dt_obj.strftime('%A')
 
         timetable_entries = tbl_timetable.objects.filter(
             teacher_id=teacher,
@@ -357,6 +484,16 @@ def save_attendance_selection(request):
             day=day,
             academicyear=academicyear
         )
+        
+        if not timetable_entries.exists():
+            timetable_entries = tbl_specialtimetable.objects.filter(
+                teacher=teacher,
+                course_id=course_id,
+                semester_id=semester_id,
+                hour=hour,
+                date=date,
+                academicyear=academicyear
+            )
 
         for tt in timetable_entries:
             students = tbl_student.objects.filter(
@@ -364,41 +501,42 @@ def save_attendance_selection(request):
             )
 
             for student in students:
-                # ✅ FIXED NAME
-                status = request.POST.get(
-                    f"attendance_{student.id}", "0"
-                )
+                status = request.POST.get(f"attendance_{student.id}")
+                if status is not None:
+                    tbl_attendance.objects.update_or_create(
+                        student=student,
+                        subject=tt.subject,
+                        teacher=teacher,
+                        course=tt.course,
+                        semester=tt.semester,
+                        academicyear=academicyear,
+                        date=date,
+                        hour=hour,
+                        defaults={"status": int(status)}
+                    )
 
-                tbl_attendance.objects.update_or_create(
-                    student=student,
-                    subject=tt.subject,
-                    teacher=teacher,
-                    course=tt.course,
-                    semester=tt.semester,
-                    academicyear=academicyear,
-                    date=today,
-                    hour=hour,
-                    defaults={"status": int(status)}
-                )
+        return redirect(f"/Teacher/student_attendance/?department={request.POST.get('department')}&course={course_id}&semester={semester_id}&hour={hour}&date={date}")
+def updateattendance(request):
+    if request.method == "POST":
+        attendance_ids = request.POST.getlist("attendance_id")
+        for aid in attendance_ids:
+            status = request.POST.get(f"status_{aid}")
+            if status is not None:
+                tbl_attendance.objects.filter(id=aid).update(status=int(status))
+    return redirect(request.META.get('HTTP_REFERER', 'Teacher:Homepage'))
 
-        return redirect("Teacher:student_attendance")
+
 def viewattendance(request, sid):
-
     studentdata = tbl_student.objects.get(id=sid)
     semesterdata = tbl_semester.objects.all()
 
-    attendancedata = None
+    attendancedata = tbl_attendance.objects.filter(student=studentdata).order_by('-date','-hour')
     selected_semester = None
     selected_date = None
 
     if request.method == "POST":
-
         selected_semester = request.POST.get("sel_semester")
         selected_date = request.POST.get("sel_date")
-
-        attendancedata = tbl_attendance.objects.filter(
-            student=studentdata
-        )
 
         if selected_semester:
             attendancedata = attendancedata.filter(semester_id=selected_semester)
@@ -410,7 +548,8 @@ def viewattendance(request, sid):
         "semesterdata": semesterdata,
         "attendancedata": attendancedata,
         "selected_semester": selected_semester,
-        "selected_date": selected_date
+        "selected_date": selected_date,
+        "student": studentdata
     })
 
 def Logout(request):
@@ -430,6 +569,54 @@ def updateattendance(request):
             tbl_attendance.objects.filter(id=aid).update(status=status)
 
     return redirect(request.META.get('HTTP_REFERER'))
+
+def view_student_details(request, sid):
+    teacher = tbl_teacher.objects.get(id=request.session['tid'])
+    assignclid = tbl_assignclass.objects.filter(teacher=teacher).last()
+    
+    # Get student - ensure they are in teacher's class
+    student = tbl_student.objects.get(id=sid)
+    
+    # Internal marks
+    internal_marks = tbl_internalmark.objects.filter(student=student)
+    
+    # Assignment performance
+    assignment_submissions = tbl_assignmentbody.objects.filter(student=student)
+    
+    # Attendance summary
+    total_attendance = tbl_attendance.objects.filter(student=student).count()
+    present_attendance = tbl_attendance.objects.filter(student=student, status=1).count()
+    attendance_percentage = (present_attendance / total_attendance * 100) if total_attendance > 0 else 0
+    
+    # Leaves & Duty Leaves
+    leaves = tbl_leave.objects.filter(student=student).order_by('-id')
+    duty_leaves = tbl_dutyleave.objects.filter(student=student).order_by('-id')
+    
+    # Approved Duty Leaves for Attendance Correction
+    approved_duty_leaves = tbl_dutyleave.objects.filter(student=student, dutyleave_status=1)
+    
+    # Fetch attendance records that fall within any approved duty leave period
+    duty_attendance_records = []
+    for dl in approved_duty_leaves:
+        recs = tbl_attendance.objects.filter(
+            student=student,
+            date__range=[dl.dutyleave_fromdate, dl.dutyleave_todate]
+        )
+        for r in recs:
+            duty_attendance_records.append(r)
+
+    return render(request, "Teacher/StudentDetails.html", {
+        'student': student,
+        'internal_marks': internal_marks,
+        'assignment_submissions': assignment_submissions,
+        'attendance_percentage': round(attendance_percentage, 2),
+        'total_attendance': total_attendance,
+        'present_attendance': present_attendance,
+        'leaves': leaves,
+        'duty_leaves': duty_leaves,
+        'duty_attendance_records': duty_attendance_records,
+        'is_class_teacher': (assignclid is not None and student.assignclass == assignclid)
+    })
 
 def viewleave(request):
     teacher = tbl_teacher.objects.get(id=request.session['tid'])
@@ -487,10 +674,53 @@ def rejectduty(request,rid):
     dutyleave.save()
     return render(request,"Teacher/Viewdutyleave.html",{'msg':"Duty Leave Rejected..."})
 
+def view_students_for_subject(request, subid):
+    teacher = tbl_teacher.objects.get(id=request.session['tid'])
+    subject = tbl_subject.objects.get(id=subid)
+    
+    # Check if teacher is assigned to this subject
+    if not tbl_assignsubject.objects.filter(teacher=teacher, subject=subject).exists():
+        return render(request, "Teacher/MyAssignedSubjects.html", {'msg': "Access Denied: Not assigned to this subject"})
+    
+    # Get classes that have this subject in timetable
+    timetables = tbl_timetable.objects.filter(subject=subject, teacher=teacher)
+    classes = [tt.Class for tt in timetables]
+    
+    # Get students in those classes
+    students = tbl_student.objects.filter(assignclass__Class__in=classes).distinct()
+    
+    return render(request, "Teacher/SubjectStudents.html", {
+        'subject': subject,
+        'students': students
+    })
+
 def myassignedsubject(request):
     teacher = tbl_teacher.objects.get(id=request.session['tid'])
     assignsubject = tbl_assignsubject.objects.filter(teacher=teacher)
     return render(request, "Teacher/MyAssignedSubjects.html", {'assignsubject': assignsubject})
+
+def view_students_for_subject(request, subid):
+    teacher = tbl_teacher.objects.get(id=request.session['tid'])
+    subject = tbl_subject.objects.get(id=subid)
+    
+    # Check if teacher is assigned to this subject
+    if not tbl_assignsubject.objects.filter(teacher=teacher, subject=subject).exists():
+        return render(request, "Teacher/MyAssignedSubjects.html", {'msg': "Access Denied: Not assigned to this subject"})
+    
+    # Get classes that have this subject in timetable
+    timetables = tbl_timetable.objects.filter(subject=subject, teacher_id=teacher)
+    classes = []
+    for tt in timetables:
+        cls = tbl_class.objects.filter(course=tt.course)
+        classes.extend(cls)
+    
+    # Get students in those classes
+    students = tbl_student.objects.filter(assignclass__Class__in=classes).distinct()
+    
+    return render(request, "Teacher/SubjectStudents.html", {
+        'subject': subject,
+        'students': students
+    })
 
 def ApplyLeave(request):
     teacher = tbl_teacher.objects.get(id=request.session['tid'])

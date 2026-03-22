@@ -134,6 +134,15 @@
 {% if msg %}
 <script>
     alert("{{msg}}");
+    
 </script>
 {% endif %}
+
+<script>
+    // Set min date for special timetable date to today
+    const dateInput = document.querySelector('input[name="txt_date"]');
+    const today = new Date().toISOString().split('T')[0];
+    dateInput.setAttribute('min', today);
+</script>
+
 {% endblock %}

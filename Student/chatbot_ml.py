@@ -1,5 +1,5 @@
-import json
 import numpy as np
+import datetime
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 from Admin.models import *
@@ -8,137 +8,202 @@ from Student.models import *
 
 class EduBot:
     def __init__(self):
-        # Define Intents: (Question Patterns, Response Type/Logic)
         self.intents = [
             {
                 "id": "attendance",
-                "patterns": ["how is my attendance", "my attendance percentage", "attendance status", "absent", "present"],
+                "patterns": [
+                    "attendance", "my attendance", "attendance percentage",
+                    "how much attendance do i have", "am i below 75",
+                    "attendance status", "present absent"
+                ],
                 "response_type": "dynamic",
                 "context": "attendance"
             },
             {
                 "id": "marks",
-                "patterns": ["my internal marks", "exam score", "marks", "result", "grade", "performance"],
+                "patterns": [
+                    "marks", "internal marks", "score", "result",
+                    "my marks", "exam result", "performance"
+                ],
                 "response_type": "dynamic",
                 "context": "marks"
             },
             {
                 "id": "assignments",
-                "patterns": ["any assignments", "pending tasks", "homework", "submissions", "assignment deadline"],
+                "patterns": [
+                    "assignment", "homework", "pending assignment",
+                    "any tasks", "submission", "assignment due"
+                ],
                 "response_type": "dynamic",
                 "context": "assignments"
             },
             {
                 "id": "timetable",
-                "patterns": ["what is my timetable", "next class", "today schedule", "when is the lecture", "my classes"],
+                "patterns": [
+                    "timetable", "schedule", "today class",
+                    "next class", "class today", "lecture"
+                ],
                 "response_type": "dynamic",
                 "context": "timetable"
             },
             {
                 "id": "notifications",
-                "patterns": ["college news", "announcements", "notifications", "what's happening", "events"],
+                "patterns": [
+                    "notifications", "announcements", "news",
+                    "events", "college updates"
+                ],
                 "response_type": "dynamic",
                 "context": "notifications"
             },
             {
+                "id": "profile",
+                "patterns": [
+                    "my details", "my profile", "student info",
+                    "my course", "my class"
+                ],
+                "response_type": "dynamic",
+                "context": "profile"
+            },
+            {
                 "id": "greetings",
-                "patterns": ["hi", "hello", "hey", "who are you", "what can you do"],
-                "response": "Hello! I'm EduBot, your personal academic assistant. You can ask me about your attendance, internal marks, assignments, or today's timetable."
+                "patterns": ["hi", "hello", "hey"],
+                "response": "Hi 👋 I'm EduBot! Ask me about attendance, marks, timetable, assignments, or notifications."
             },
             {
                 "id": "leave",
-                "patterns": ["how to apply for leave", "sick leave", "absent application"],
-                "response": "You can apply for leave from the 'Leaves' section in your dashboard. Just provide the reason and travel/duration dates."
+                "patterns": ["leave", "apply leave", "sick leave"],
+                "response": "You can apply leave from the Leave section in your dashboard."
             },
             {
                 "id": "complaint",
-                "patterns": ["i want to complain", "issue with class", "feedback", "reporting issue"],
-                "response": "If you have any academic or infrastructure issues, please use the 'Complaints' section to submit your feedback to the administration."
+                "patterns": ["complaint", "issue", "problem", "report"],
+                "response": "Please use the Complaint section to submit your issue."
             }
         ]
-        
-        # Prepare training data
-        self.all_patterns = []
-        self.pattern_to_intent = []
-        
+
+        self.patterns = []
+        self.intent_map = []
+
         for intent in self.intents:
-            for pattern in intent["patterns"]:
-                self.all_patterns.append(pattern)
-                self.pattern_to_intent.append(intent)
-        
-        # Initialize Vectorizer
-        self.vectorizer = TfidfVectorizer().fit(self.all_patterns)
-        self.feature_matrix = self.vectorizer.transform(self.all_patterns)
+            for p in intent["patterns"]:
+                self.patterns.append(p)
+                self.intent_map.append(intent)
 
-    def get_response(self, user_query, student):
-        user_query = user_query.lower()
-        query_vec = self.vectorizer.transform([user_query])
-        
-        # Calculate Cosine Similarity
-        similarities = cosine_similarity(query_vec, self.feature_matrix).flatten()
-        max_idx = np.argmax(similarities)
-        
-        if similarities[max_idx] < 0.3:
-            return "I'm sorry, I'm not quite sure how to help with that yet. Feel free to ask about your attendance, marks, or timetable!"
+        self.vectorizer = TfidfVectorizer().fit(self.patterns)
+        self.matrix = self.vectorizer.transform(self.patterns)
 
-        intent = self.pattern_to_intent[max_idx]
-        
+    def get_response(self, query, student):
+        query = query.lower()
+        vec = self.vectorizer.transform([query])
+        sim = cosine_similarity(vec, self.matrix).flatten()
+        idx = np.argmax(sim)
+
+        if sim[idx] < 0.25:
+            return self.fallback()
+
+        intent = self.intent_map[idx]
+
         if intent.get("response_type") == "dynamic":
-            return self._handle_dynamic_intent(intent["context"], student)
-        else:
-            return intent.get("response", "I'm processing your request, please hold on.")
+            return self.handle_dynamic(intent["context"], student)
+        return intent.get("response")
 
-    def _handle_dynamic_intent(self, context, student):
+    def fallback(self):
+        return ("I'm not sure I understood that 🤔\n"
+                "Try asking things like:\n"
+                "- My attendance\n"
+                "- My marks\n"
+                "- Today's timetable\n"
+                "- Any assignments")
+
+    def handle_dynamic(self, context, student):
+
+        # ✅ ATTENDANCE
         if context == "attendance":
             attendance = tbl_attendance.objects.filter(student=student)
+
             total = attendance.count()
             present = attendance.filter(status=1).count()
-            if total > 0:
-                percentage = (present / total) * 100
-                return f"Your current attendance is {percentage:.2f}%. You have attended {present} out of {total} classes. Keep it up!"
-            return "I couldn't find any attendance logs for you. Try checking later!"
-            
+
+            if total == 0:
+                return "No attendance data found."
+
+            percent = (present / total) * 100
+
+            status_msg = "Good 👍"
+            if percent < 75:
+                status_msg = "Warning ⚠️ You are below 75%!"
+
+            return f"Attendance: {percent:.2f}%\nPresent: {present}/{total}\n{status_msg}"
+
+        # ✅ MARKS
         elif context == "marks":
             marks = tbl_internalmark.objects.filter(student=student)
-            if marks.exists():
-                reply = "Here are your latest internal assessment scores:\n"
-                for m in marks:
-                    reply += f"\n- {m.subject.subject_name}: {m.internal_score}"
-                return reply
-            return "Your internal marks haven't been uploaded yet."
-            
+
+            if not marks.exists():
+                return "Marks not uploaded yet."
+
+            reply = "📊 Your Marks:\n"
+            for m in marks:
+                reply += f"- {m.subject.subject_name}: {m.internal_score}\n"
+            return reply
+
+        # ✅ ASSIGNMENTS
         elif context == "assignments":
             course = student.assignclass.Class.course
-            assignments = tbl_assignment.objects.filter(subject__course=course).order_by('-id')[:3]
-            if assignments.exists():
-                reply = "Recent/Upcoming assignments:\n"
-                for a in assignments:
-                    reply += f"\n- {a.assignment_title} for {a.subject.subject_name} (Due: {a.assignment_duedate})"
-                return reply
-            return "No active assignments found for your current course curriculum."
-            
-        elif context == "timetable":
-            import datetime
-            today_day = datetime.datetime.now().strftime("%A")
-            course = student.assignclass.Class.course
-            timetable = tbl_timetable.objects.filter(course=course, day=today_day).order_by('hour')
-            if timetable.exists():
-                reply = f"Today's ({today_day}) class schedule:\n"
-                for t in timetable:
-                    reply += f"\n- Hour {t.hour}: {t.subject.subject_name} ({t.teacher_id.teacher_name})"
-                return reply
-            return f"Great news! No classes are scheduled for you today ({today_day})."
-            
-        elif context == "notifications":
-            notifications = tbl_notification.objects.all().order_by('-id')[:2]
-            if notifications.exists():
-                reply = "Latest college announcements:\n"
-                for n in notifications:
-                    reply += f"\n- {n.notification_title}: {n.notification_content[:50]}..."
-                return reply
-            return "Stay tuned! No official announcements have been posted recently."
-            
-        return "I'm processing your request, please hold on."
 
-# Global Instance
+            assignments = tbl_assignment.objects.filter(
+                subject__course=course
+            ).order_by('-assignment_duedate')[:5]
+
+            if not assignments.exists():
+                return "No assignments found."
+
+            reply = "📝 Assignments:\n"
+            for a in assignments:
+                reply += f"- {a.assignment_title} ({a.subject.subject_name})\nDue: {a.assignment_duedate}\n"
+            return reply
+
+        # ✅ TIMETABLE
+        elif context == "timetable":
+            today = datetime.datetime.now().strftime("%A")
+
+            course = student.assignclass.Class.course
+
+            timetable = tbl_timetable.objects.filter(
+                course=course,
+                day=today
+            ).order_by('hour')
+
+            if not timetable.exists():
+                return f"No classes today ({today}) 🎉"
+
+            reply = f"📅 {today} Schedule:\n"
+            for t in timetable:
+                reply += f"- Hour {t.hour}: {t.subject.subject_name} ({t.teacher_id.teacher_name})\n"
+            return reply
+
+        # ✅ NOTIFICATIONS
+        elif context == "notifications":
+            notes = tbl_notification.objects.all().order_by('-id')[:3]
+
+            if not notes.exists():
+                return "No notifications available."
+
+            reply = "📢 Latest Updates:\n"
+            for n in notes:
+                reply += f"- {n.notification_title}\n"
+            return reply
+
+        # ✅ PROFILE
+        elif context == "profile":
+            return (
+                f"👤 Name: {student.student_name}\n"
+                f"📚 Course: {student.assignclass.Class.course.course_name}\n"
+                f"🏫 Class: {student.assignclass.Class.class_name}"
+            )
+
+        return "Processing..."
+        
+
+# GLOBAL INSTANCE
 edubot_instance = EduBot()

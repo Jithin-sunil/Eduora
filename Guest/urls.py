@@ -5,7 +5,7 @@ app_name="Guest"
 urlpatterns = [
     path('', views.index, name="index"),
     path('Login/', views.Login, name="Login"),
-    path('ForgotPassword/', views.forgot_password, name="forgot_password"),
-    path('VerifyOTP/', views.verify_otp, name="verify_otp"),
-    path('ResetPassword/', views.reset_password, name="reset_password"),
+  path('forgot-password/', views.forgotpassword, name="forgotpassword"),
+path('verify-otp/', views.otp, name="otp"),
+path('reset-password/', views.newpass, name="newpass"),
 ]

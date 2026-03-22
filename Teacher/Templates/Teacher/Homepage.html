@@ -112,16 +112,16 @@
     </div>
     <div class="col-md-3">
         <div class="stat-box">
-            <div class="stat-icon text-success"><i class="fas fa-file-alt"></i></div>
-            <div class="stat-value">{{ assignment_count }}</div>
-            <div class="stat-label">Assignments</div>
+            <div class="stat-icon text-success"><i class="fas fa-check-double"></i></div>
+            <div class="stat-value text-success">{{ verified_duty_leaves }}</div>
+            <div class="stat-label">Verified Duty Leaves</div>
         </div>
     </div>
     <div class="col-md-3">
         <div class="stat-box">
             <div class="stat-icon text-warning"><i class="fas fa-clock"></i></div>
-            <div class="stat-value">{{ assignment_submission_count }}</div>
-            <div class="stat-label">Submissions</div>
+            <div class="stat-value">{{ pending_evaluations }}</div>
+            <div class="stat-label">Pending Reviews</div>
         </div>
     </div>
     <div class="col-md-3">
@@ -139,6 +139,21 @@
             <div class="section-title">
                 <h5 class="mb-0">Class Performance (Attendance)</h5>
             </div>
+            
+            <!-- Critical Attendance Alerts -->
+            {% if data %}
+            <div class="mb-4">
+                <div class="smaller text-danger uppercase fw-bold mb-2"><i class="fas fa-exclamation-triangle me-2"></i>Critical Attendance (< 75%)</div>
+                {% for s in data %}
+                    {% if s.percentage < 75 %}
+                    <div class="alert alert-danger bg-danger bg-opacity-10 border-0 p-2 mb-2 d-flex align-items-center justify-content-between rounded-3 animate-pulse">
+                        <div class="smaller fw-semibold"><i class="fas fa-user-slash me-2"></i>{{ s.student.student_name }}</div>
+                        <div class="badge bg-danger rounded-pill">{{ s.percentage }}%</div>
+                    </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+            {% endif %}
             {% for s in data %}
             <div class="student-row">
                 <img src="{{ s.student.student_photo.url }}" class="student-avatar" alt="">

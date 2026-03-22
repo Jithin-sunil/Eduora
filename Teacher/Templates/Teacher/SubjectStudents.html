@@ -1,0 +1,66 @@
+{% extends 'Teacher/Head.html' %}
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row pt-4 justify-content-center">
+        <div class="col-lg-11">
+
+            <div class="d-flex align-items-center justify-content-between mb-4">
+                <div>
+                    <h2 class="h3 fw-bold mb-1">Subject Student Management</h2>
+                    <p class="text-muted small mb-0">Subjects: {{ subject.subject_name }} | Course: {{ subject.course.course_name }} | Semester: {{ subject.semester.semester_name }}</p>
+                </div>
+                <div class="bg-primary bg-opacity-10 text-primary p-3 rounded-circle">
+                    <i class="fas fa-users fa-2x"></i>
+                </div>
+            </div>
+
+            <div class="card bg-white bg-opacity-5 border border-white border-opacity-10 rounded-4 shadow-sm overflow-hidden animate-fadeIn">
+                <div class="card-header bg-white bg-opacity-5 py-3 px-4 border-0">
+                    <h5 class="mb-0 fw-bold small text-muted uppercase letter-spacing-1">Enrolled Students</h5>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-dark table-hover mb-0 align-middle">
+                        <thead class="bg-white bg-opacity-10 border-0">
+                            <tr>
+                                <th class="px-4 py-3 border-0 small text-muted uppercase">Name</th>
+                                <th class="px-4 py-3 border-0 small text-muted uppercase">Register Number</th>
+                                <th class="px-4 py-3 border-0 small text-muted uppercase">Email</th>
+                                <th class="px-4 py-3 border-0 small text-muted uppercase">Class</th>
+                                <th class="px-4 py-3 border-0 small text-muted uppercase text-end">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for student in students %}
+                            <tr class="border-white border-opacity-5">
+                                <td class="px-4 py-3 fw-bold">{{ student.student_name }}</td>
+                                <td class="px-4 py-3">{{ student.student_registernumber }}</td>
+                                <td class="px-4 py-3">{{ student.student_email }}</td>
+                                <td class="px-4 py-3">{{ student.assignclass.Class.class_name }}</td>
+                                <td class="px-4 py-3 text-end">
+                                    <div class="d-flex justify-content-end gap-2">
+                                        <a href="{% url 'Teacher:Addinternalmark' student.id %}" class="btn btn-sm btn-primary rounded-pill px-3">
+                                            <i class="fas fa-plus me-1"></i> Add Mark
+                                        </a>
+                                        <a href="{% url 'Teacher:view_student_details' student.id %}" class="btn btn-sm btn-outline-light rounded-pill px-3">
+                                            <i class="fas fa-eye me-1"></i> Details
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" class="text-center py-5 text-muted opacity-50">
+                                    <i class="fas fa-user-slash fa-2x mb-3 d-block"></i>
+                                    No students are currently assigned for this subject.
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -81,7 +81,7 @@
                                     {% for i in dutyleavedata %}
                                     <tr class="border-white border-opacity-5">
                                         <td class="px-4 py-3">
-                                            <div class="fw-bold text-white small mb-1">{{ i.dutyleave_fromdate }} to {{ i.dutyleave_todate }}</div>
+                                            <div class="fw-bold text-white small mb-1">{{ i.dutyleave_fromdate|date:"d/m/Y" }} to {{ i.dutyleave_todate|date:"d/m/Y" }}</div>
                                             <div class="smaller text-muted opacity-50 uppercase">Session Hour: {{ i.dutyleave_hour }}</div>
                                         </td>
                                         <td class="px-4 py-3">
@@ -131,4 +131,29 @@
     window.location="{% url 'Student:dutyleave' %}";
 </script>
 {% endif %}
+
+<script>
+    // Set min date for duty leave dates to today
+    const fromDateInput = document.querySelector('input[name="txt_fromdate"]');
+    const toDateInput = document.querySelector('input[name="txt_todate"]');
+    const today = new Date().toISOString().split('T')[0];
+    fromDateInput.setAttribute('min', today);
+    toDateInput.setAttribute('min', today);
+
+    // Validate todate >= fromdate
+    fromDateInput.addEventListener('change', function() {
+        toDateInput.setAttribute('min', this.value);
+        if (toDateInput.value && toDateInput.value < this.value) {
+            toDateInput.value = this.value;
+        }
+    });
+
+    toDateInput.addEventListener('change', function() {
+        if (this.value < fromDateInput.value) {
+            alert('To date must be after or equal to from date.');
+            this.value = fromDateInput.value;
+        }
+    });
+</script>
+
 {% endblock %}

@@ -85,6 +85,7 @@
 {% if msg %}
 <script>
     alert("{{msg}}");
+    window.location = "{% url 'Admin:Course' %}";
 </script>
 {% endif %}
 {% endblock %}

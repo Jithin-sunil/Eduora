@@ -71,7 +71,7 @@
                                     <tr class="border-white border-opacity-5">
                                         <td class="px-4 py-3 title-cell">
                                             <div class="fw-bold text-white title-text">{{ i.comp_title }}</div>
-                                            <div class="smaller text-muted opacity-50">{{ i.com_date }}</div>
+                                            <div class="smaller text-muted opacity-50">{{ i.com_date|date:"d/m/Y" }}</div>
                                         </td>
                                         <td class="px-4 py-3 small opacity-75">
                                             {{ i.com_content|truncatechars:100 }}

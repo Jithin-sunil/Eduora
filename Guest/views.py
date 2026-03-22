@@ -5,6 +5,9 @@ from Teacher.models import *
 import random, datetime
 from django.core.mail import send_mail
 from django.conf import settings
+from django.utils import timezone
+from datetime import timedelta
+
 
 # Create your views here.
 
@@ -14,22 +17,22 @@ def index(request):
 def Login(request):
     if request.method == "POST":
     
-        email=request.POST.get("txt_mail")
+        email=request.POST.get("txt_mail").strip()
         password=request.POST.get("txt_password")
 
-        admincount = tbl_admin.objects.filter(admin_email=email,admin_password=password).count()
-        teachercount = tbl_teacher.objects.filter(teacher_email=email,teacher_password=password).count()
-        studentcount = tbl_student.objects.filter(student_email=email,student_password=password).count()
+        admincount = tbl_admin.objects.filter(admin_email__iexact=email,admin_password=password).count()
+        teachercount = tbl_teacher.objects.filter(teacher_email__iexact=email,teacher_password=password).count()
+        studentcount = tbl_student.objects.filter(student_email__iexact=email,student_password=password).count()
         if admincount > 0:
-            admin=tbl_admin.objects.get(admin_email=email,admin_password=password)
+            admin=tbl_admin.objects.get(admin_email__iexact=email,admin_password=password)
             request.session['aid'] = admin.id
             return redirect("Admin:Homepage")
         elif teachercount > 0:
-            teacher=tbl_teacher.objects.get(teacher_email=email,teacher_password=password)
+            teacher=tbl_teacher.objects.get(teacher_email__iexact=email,teacher_password=password)
             request.session['tid'] = teacher.id
             return redirect("Teacher:Homepage")
         elif studentcount > 0:
-            student=tbl_student.objects.get(student_email=email,student_password=password)
+            student=tbl_student.objects.get(student_email__iexact=email,student_password=password)
             request.session['sid'] = student.id
             return redirect("Student:Homepage")
         else:
@@ -37,98 +40,116 @@ def Login(request):
     else:
         return render(request,"Guest/Login.html")
 
-
-# ── Forgot Password – Step 1: Enter Email ─────────────────────────────────────
-def forgot_password(request):
+def forgotpassword(request):
     if request.method == "POST":
-        email = request.POST.get("txt_email", "").strip()
+        email = request.POST.get("txt_email")
 
-        # Check the email exists in any user table
-        is_admin   = tbl_admin.objects.filter(admin_email=email).exists()
-        is_teacher = tbl_teacher.objects.filter(teacher_email=email).exists()
-        is_student = tbl_student.objects.filter(student_email=email).exists()
+        user_id = None
+        role = None
 
-        if not (is_admin or is_teacher or is_student):
-            return render(request, "Guest/ForgotPassword.html", {"msg": "No account found with that email."})
+        # Check Admin
+        try:
+            admin = tbl_admin.objects.get(admin_email=email)
+            user_id = admin.id
+            role = "admin"
+        except tbl_admin.DoesNotExist:
+            pass
+
+        # Check Teacher
+        if not role:
+            try:
+                teacher = tbl_teacher.objects.get(teacher_email=email)
+                user_id = teacher.id
+                role = "teacher"
+            except tbl_teacher.DoesNotExist:
+                pass
+
+        # Check Student
+        if not role:
+            try:
+                student = tbl_student.objects.get(student_email=email)
+                user_id = student.id
+                role = "student"
+            except tbl_student.DoesNotExist:
+                pass
+
+        if not role:
+            return render(request, "Guest/ForgotPassword.html", {"msg": "Email not found"})
 
         # Generate OTP
-        otp_code = str(random.randint(100000, 999999))
-        tbl_otp.objects.create(otp_email=email, otp_code=otp_code)
+        otp = random.randint(111111, 999999)
 
-        # Send OTP Email
-        try:
-            send_mail(
-                subject="🔐 EduSphere – Password Reset OTP",
-                message=(
-                    f"Your OTP for password reset is: {otp_code}\n\n"
-                    "This OTP is valid for 10 minutes. Do not share it with anyone.\n\n"
-                    "If you did not request this, please ignore this email.\n\n"
-                    "— EduSphere College Portal"
-                ),
-                from_email=settings.DEFAULT_FROM_EMAIL,
-                recipient_list=[email],
-                fail_silently=False,
-            )
-        except Exception as e:
-            return render(request, "Guest/ForgotPassword.html", {"msg": f"Failed to send OTP: {str(e)}"})
+        # Store in session
+        request.session["otp"] = otp
+        request.session["uid"] = user_id
+        request.session["role"] = role
 
-        request.session['reset_email'] = email
-        return redirect("Guest:verify_otp")
+        # Send Mail
+        send_mail(
+            'Password Reset OTP',
+            f"Your OTP is {otp}",
+            settings.EMAIL_HOST_USER,
+            [email],
+        )
+
+        return redirect("Guest:otp")
+
     return render(request, "Guest/ForgotPassword.html")
 
-
-# ── Forgot Password – Step 2: Verify OTP ──────────────────────────────────────
-def verify_otp(request):
-    email = request.session.get('reset_email')
-    if not email:
-        return redirect("Guest:forgot_password")
-
+def otp(request):
     if request.method == "POST":
-        entered_otp = request.POST.get("txt_otp", "").strip()
+        inp_otp = request.POST.get("txt_otp")
 
-        # Get the latest unused OTP for this email (within 10 mins)
-        cutoff = datetime.datetime.now() - datetime.timedelta(minutes=10)
-        otp_record = tbl_otp.objects.filter(
-            otp_email=email,
-            otp_status=0,
-            otp_time__gte=cutoff
-        ).order_by('-id').first()
+        if "otp" not in request.session:
+            return redirect("Guest:forgotpassword")
 
-        if not otp_record:
-            return render(request, "Guest/VerifyOTP.html", {"msg": "OTP expired. Please request a new one.", "email": email})
-
-        if otp_record.otp_code == entered_otp:
-            otp_record.otp_status = 1
-            otp_record.save()
-            return redirect("Guest:reset_password")
+        if inp_otp == str(request.session["otp"]):
+            return redirect("Guest:newpass")
         else:
-            return render(request, "Guest/VerifyOTP.html", {"msg": "Incorrect OTP. Try again.", "email": email})
+            return render(request, "Guest/OTP.html", {"msg": "OTP does not match!"})
 
-    return render(request, "Guest/VerifyOTP.html", {"email": email})
+    return render(request, "Guest/OTP.html")
 
 
-# ── Forgot Password – Step 3: Set New Password ────────────────────────────────
-def reset_password(request):
-    email = request.session.get('reset_email')
-    if not email:
-        return redirect("Guest:forgot_password")
 
+def newpass(request):
     if request.method == "POST":
-        new_pass   = request.POST.get("txt_newpassword")
-        conf_pass  = request.POST.get("txt_confirmpassword")
 
-        if new_pass != conf_pass:
-            return render(request, "Guest/ResetPassword.html", {"msg": "Passwords do not match."})
+        if "uid" not in request.session or "role" not in request.session:
+            return redirect("Guest:forgotpassword")
 
-        # Update whichever account this email belongs to
-        tbl_admin.objects.filter(admin_email=email).update(admin_password=new_pass)
-        tbl_teacher.objects.filter(teacher_email=email).update(teacher_password=new_pass)
-        tbl_student.objects.filter(student_email=email).update(student_password=new_pass)
+        uid = request.session["uid"]
+        role = request.session["role"]
 
-        # Clean session
-        if 'reset_email' in request.session:
-            del request.session['reset_email']
+        new_pass = request.POST.get("txt_newpassword")
+        con_pass = request.POST.get("txt_confirmpassword")
 
-        return render(request, "Guest/Login.html", {"msg": "Password reset successful! Please login."})
+        if new_pass != con_pass:
+            return render(request, "Guest/NewPassword.html", {
+                "msg": "Passwords do not match!"
+            })
 
-    return render(request, "Guest/ResetPassword.html")
+        # Update based on role
+        if role == "admin":
+            user = tbl_admin.objects.get(id=uid)
+            user.admin_password = new_pass
+            user.save()
+
+        elif role == "teacher":
+            user = tbl_teacher.objects.get(id=uid)
+            user.teacher_password = new_pass
+            user.save()
+
+        elif role == "student":
+            user = tbl_student.objects.get(id=uid)
+            user.student_password = new_pass
+            user.save()
+
+        # Clear session
+        request.session.flush()
+
+        return render(request, "Guest/Login.html", {
+            "msg": "Password updated successfully! Please login."
+        })
+
+    return render(request, "Guest/NewPassword.html")

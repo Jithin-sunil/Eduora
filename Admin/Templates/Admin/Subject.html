@@ -122,6 +122,7 @@
 {% if msg %}
 <script>
     alert("{{msg}}");
+    window.location = "{% url 'Admin:Subject' %}";
 </script>
 {% endif %}
 {% endblock %}
